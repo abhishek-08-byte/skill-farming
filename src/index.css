@@ -1,0 +1,77 @@
+@import "tailwindcss";
+
+:root {
+  --primary-teal: #0F4C47;
+  --primary-dark: #092B28;
+  --primary-light: #16605A;
+  --accent-mint: #14B8A6;
+  --accent-gold: #F59E0B;
+  --accent-purple: #8B5CF6;
+  --bg-page: #F3F7F5;
+  --bg-card: #FFFFFF;
+  --border-soft: #E2ECE8;
+  --text-main: #1F2937;
+  --text-muted: #6B7280;
+}
+
+body {
+  background-color: #F3F7F5;
+  color: #1F2937;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  text-align: left;
+  border-inline: none;
+}
+
+/* Custom scrollbar for clean UI */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f5f4;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glass & Card effects matching reference image */
+.farming-card {
+  background: #FFFFFF;
+  border: 1px solid #E5EFEA;
+  border-radius: 1.25rem;
+  box-shadow: 0 1px 3px 0 rgba(15, 76, 71, 0.04), 0 1px 2px -1px rgba(15, 76, 71, 0.04);
+  transition: all 0.2s ease-in-out;
+}
+
+.farming-card:hover {
+  box-shadow: 0 4px 12px -2px rgba(15, 76, 71, 0.08);
+}
+
+.farming-hero {
+  background: linear-gradient(135deg, #0F4C47 0%, #0A332F 100%);
+  color: #FFFFFF;
+  border-radius: 1.5rem;
+}
+
+.farming-sidebar-active {
+  background-color: #E2F1ED;
+  color: #0F4C47;
+  font-weight: 600;
+}
