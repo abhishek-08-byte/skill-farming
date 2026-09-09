@@ -14,12 +14,14 @@
   --text-muted: #6B7280;
 }
 
-body {
+html, body {
   background-color: #F3F7F5;
   color: #1F2937;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   margin: 0;
   padding: 0;
+  overflow-x: hidden;
+  max-width: 100vw;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

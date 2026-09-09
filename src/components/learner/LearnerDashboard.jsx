@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { ProfileCompletionCard } from '../profile/ProfileCompletionCard';
 import {
   TrendingUp,
   Award,
@@ -23,7 +24,8 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
   const {
     currentUser,
     setActiveTab,
-    updateCourseProgress
+    updateCourseProgress,
+    openCoursePlayer
   } = useApp();
 
   const [filterDomain, setFilterDomain] = useState('All');
@@ -173,6 +175,9 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
         </div>
       </div>
 
+      {/* PROFILE COMPLETION CALLOUT */}
+      <ProfileCompletionCard role="learner" />
+
       {/* MIDDLE ROW: Active Courses Cards - Matches Reference Image (Mathematics, Biology, English Lit, Modern Art) */}
       <div>
         <div className="flex items-center justify-between mb-3">
@@ -246,8 +251,8 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
                 {/* Resume Learning Button */}
                 <button
                   onClick={() => {
-                    updateCourseProgress(course.courseId, 1);
-                    if (onSelectCourse) onSelectCourse(course.courseId);
+                    if (openCoursePlayer) openCoursePlayer(course.courseId);
+                    else if (onSelectCourse) onSelectCourse(course.courseId);
                   }}
                   className="mt-4 w-full py-2 px-3 rounded-xl border border-[#DCE8E3] hover:border-[#0F4C47] text-[#0F4C47] hover:bg-[#F0F6F4] text-xs font-bold transition-colors text-center"
                 >

@@ -13,6 +13,7 @@ import { ProfileSettings } from './components/learner/ProfileSettings';
 import { InstitutionPortal } from './components/institution/InstitutionPortal';
 import { GovernmentPortal } from './components/government/GovernmentPortal';
 import { LandingPage } from './components/landing/LandingPage';
+import { CompleteProfileWizard } from './components/profile/CompleteProfileWizard';
 
 const MainLayout = () => {
   const { activeTab, setActiveTab, currentRole } = useApp();
@@ -39,42 +40,46 @@ const MainLayout = () => {
         <Sidebar />
 
         {/* Main Content Scrollable Area */}
-        <main className="flex-1 overflow-y-auto px-4 sm:px-6 lg:px-8 py-5">
-          {activeTab === 'dashboard' && (
+        <main className="flex-1 overflow-y-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-5 pb-24 md:pb-6">
+          {/* Settings Tab available across roles */}
+          {activeTab === 'settings' && (
+            <ProfileSettings />
+          )}
+
+          {/* Learner Dashboard and Views */}
+          {currentRole === 'learner' && activeTab === 'dashboard' && (
             <LearnerDashboard
               onOpenAssessment={() => setIsAssessmentOpen(true)}
               onSelectCourse={() => setActiveTab('course')}
             />
           )}
 
-          {activeTab === 'course' && (
+          {currentRole === 'learner' && activeTab === 'course' && (
             <CourseCatalog />
           )}
 
-          {activeTab === 'analytics' && (
+          {currentRole === 'learner' && activeTab === 'analytics' && (
             <SkillGapView
               onEnrollCourse={() => setActiveTab('course')}
               onOpenAssessment={() => setIsAssessmentOpen(true)}
             />
           )}
 
-          {activeTab === 'attendance' && (
+          {currentRole === 'learner' && activeTab === 'attendance' && (
             <AttendanceView />
           )}
 
-          {activeTab === 'employment' && (
+          {currentRole === 'learner' && activeTab === 'employment' && (
             <EmploymentFollowup />
           )}
 
-          {activeTab === 'settings' && (
-            <ProfileSettings />
-          )}
-
-          {activeTab === 'institution' && (
+          {/* Institution Portal */}
+          {currentRole === 'institution' && activeTab !== 'settings' && (
             <InstitutionPortal />
           )}
 
-          {activeTab === 'government' && (
+          {/* Government Portal */}
+          {currentRole === 'government' && activeTab !== 'settings' && (
             <GovernmentPortal />
           )}
         </main>
@@ -88,6 +93,9 @@ const MainLayout = () => {
           if (activeTab === 'assessment') setActiveTab('dashboard');
         }}
       />
+
+      {/* Role-Specific Multi-Step Complete Profile Wizard Modal */}
+      <CompleteProfileWizard />
 
       {/* Mobile Bottom Navigation (Visible on smartphone viewports) */}
       <MobileNav onOpenAssessment={() => setIsAssessmentOpen(true)} />

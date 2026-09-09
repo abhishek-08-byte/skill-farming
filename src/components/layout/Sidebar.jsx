@@ -13,7 +13,9 @@ import {
   Building,
   Shield,
   Layers,
-  RotateCcw
+  Users,
+  RotateCcw,
+  FileSpreadsheet
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -22,7 +24,8 @@ export const Sidebar = () => {
     setActiveTab,
     currentRole,
     setCurrentRole,
-    resetDemoData
+    resetDemoData,
+    logoutUser
   } = useApp();
 
   // Navigation items based on current role
@@ -40,14 +43,16 @@ export const Sidebar = () => {
     { id: 'institution', label: 'Batches & Courses', icon: Building },
     { id: 'institution-students', label: 'Student Rosters', icon: BookOpen },
     { id: 'institution-attendance', label: 'Attendance Logs', icon: CalendarDays },
-    { id: 'dashboard', label: 'Learner View', icon: LayoutGrid },
+    { id: 'institution-registry', label: 'Learner Profiles Excel', icon: FileSpreadsheet },
   ];
 
   const governmentNav = [
-    { id: 'government', label: 'State Overview', icon: Shield },
+    { id: 'government', label: 'Govt / Private Hub', icon: Shield },
+    { id: 'government-private', label: '🏢 Private Testing & Cards', icon: Building },
+    { id: 'government-tracking', label: '🛡️ Govt Candidate Tracking', icon: Users },
+    { id: 'government-registry', label: 'Master Excel Registry', icon: FileSpreadsheet },
     { id: 'government-drilldown', label: 'District Drilldown', icon: Layers },
     { id: 'government-cohorts', label: 'Cohort Trends', icon: TrendingUp },
-    { id: 'dashboard', label: 'Learner View', icon: LayoutGrid },
   ];
 
   const currentNav = currentRole === 'learner'
@@ -84,8 +89,6 @@ export const Sidebar = () => {
                 key={item.id}
                 onClick={() => {
                   if (item.id === 'assignments') setActiveTab('assessment');
-                  else if (item.id === 'government-drilldown' || item.id === 'government-cohorts') setActiveTab('government');
-                  else if (item.id === 'institution-students' || item.id === 'institution-attendance') setActiveTab('institution');
                   else setActiveTab(item.id);
                 }}
                 className={`w-full flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
@@ -122,13 +125,23 @@ export const Sidebar = () => {
           </div>
         </div>
 
-        {/* Demo Reset / Logout Button */}
+        {/* Sign Out to Landing */}
+        <button
+          onClick={logoutUser}
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors"
+          title="Sign out and return to Home Landing Page"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Sign Out to Home</span>
+        </button>
+
+        {/* Demo Reset Button */}
         <button
           onClick={resetDemoData}
-          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
+          className="w-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl text-[11px] font-semibold text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition-colors"
           title="Reset local changes back to default demo state"
         >
-          <RotateCcw className="w-3.5 h-3.5" />
+          <RotateCcw className="w-3 h-3" />
           <span>Reset Demo Data</span>
         </button>
       </div>

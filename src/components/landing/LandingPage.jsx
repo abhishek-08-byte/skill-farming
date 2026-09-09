@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
 import {
   ArrowRight,
@@ -14,17 +14,23 @@ import {
   ChevronRight,
   Shield,
   Building,
-  UserCheck
+  UserCheck,
+  LogIn,
+  UserPlus
 } from 'lucide-react';
+import { AuthModal } from '../auth/AuthModal';
 
 export const LandingPage = ({ onGetStarted }) => {
   const { setCurrentRole, setActiveTab } = useApp();
 
-  const handleLaunchRole = (role) => {
-    setCurrentRole(role);
-    if (role === 'learner') setActiveTab('dashboard');
-    else if (role === 'institution') setActiveTab('institution');
-    else if (role === 'government') setActiveTab('government');
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [authTab, setAuthTab] = useState('login');
+  const [authRole, setAuthRole] = useState('learner');
+
+  const openAuth = (tab = 'login', role = 'learner') => {
+    setAuthTab(tab);
+    setAuthRole(role);
+    setIsAuthOpen(true);
   };
 
   const steps = [
@@ -54,23 +60,27 @@ export const LandingPage = ({ onGetStarted }) => {
           </div>
         </div>
 
+        {/* Auth Buttons in Header */}
         <div className="flex items-center gap-3">
           <button
-            onClick={() => handleLaunchRole('learner')}
-            className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all shadow-xs"
+            onClick={() => openAuth('login', 'learner')}
+            className="px-4 py-2 rounded-xl text-xs font-bold text-slate-700 hover:text-[#0F4C47] hover:bg-[#E2F1ED] transition-all flex items-center gap-1.5"
           >
-            Launch Live Prototype
+            <LogIn className="w-3.5 h-3.5" />
+            <span>Log In</span>
+          </button>
+          <button
+            onClick={() => openAuth('register', 'learner')}
+            className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 hover:scale-[1.02]"
+          >
+            <UserPlus className="w-3.5 h-3.5" />
+            <span>Create Account</span>
           </button>
         </div>
       </header>
 
       {/* Hero Section */}
       <section className="max-w-5xl mx-auto px-6 pt-12 pb-16 text-center">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E2F1ED] border border-[#DCE8E3] text-[#0F4C47] text-xs font-bold mb-6">
-          <Sparkles className="w-4 h-4 text-teal-600" />
-          <span>Smart India Hackathon • Problem Statement Prototype</span>
-        </div>
-
         <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-tight max-w-4xl mx-auto">
           Find your skill gaps.<br />
           <span className="text-[#0F4C47]">Learn what you need.</span><br />
@@ -81,53 +91,60 @@ export const LandingPage = ({ onGetStarted }) => {
           A continuous longitudinal platform connecting learner capability, 10-question standardized assessments, skill gap mapping, targeted upskilling, and post-training employment retention evidence.
         </p>
 
-        {/* Primary & Secondary CTAs */}
+        {/* Primary & Secondary CTAs with Login and Create Account */}
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-8">
           <button
-            onClick={() => {
-              if (onGetStarted) onGetStarted();
-              else handleLaunchRole('learner');
-            }}
+            onClick={() => openAuth('register', 'learner')}
             className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-sm font-black transition-all shadow-md flex items-center justify-center gap-2 hover:scale-[1.02]"
           >
-            <span>GET STARTED</span>
+            <span>CREATE FREE ACCOUNT</span>
             <ArrowRight className="w-4 h-4" />
           </button>
 
-          <a
-            href="#how-it-works"
-            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-white border border-[#DCE8E3] hover:bg-slate-50 text-slate-800 text-sm font-bold transition-all shadow-xs"
+          <button
+            onClick={() => openAuth('login', 'learner')}
+            className="w-full sm:w-auto px-8 py-3.5 rounded-2xl bg-white border border-[#DCE8E3] hover:bg-slate-50 text-slate-800 text-sm font-bold transition-all shadow-xs flex items-center justify-center gap-2"
           >
-            EXPLORE HOW IT WORKS
-          </a>
+            <LogIn className="w-4 h-4 text-[#0F4C47]" />
+            <span>LOG IN TO PORTAL</span>
+          </button>
         </div>
 
-        {/* Role Quick Demo Bar */}
-        <div className="mt-12 p-4 rounded-3xl bg-white border border-[#E5EFEA] shadow-sm max-w-2xl mx-auto">
-          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">
-            Explore 3 Dedicated Perspectives:
+        {/* Role Quick Selector Cards */}
+        <div className="mt-12 p-5 rounded-3xl bg-white border border-[#E5EFEA] shadow-sm max-w-2xl mx-auto">
+          <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-left sm:text-center">
+            Log In or Register by Role Perspective:
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
             <button
-              onClick={() => handleLaunchRole('learner')}
-              className="p-2.5 rounded-xl border border-teal-200 bg-teal-50/50 hover:bg-teal-100/70 text-xs font-bold text-[#0F4C47] transition-all flex flex-col items-center gap-1"
+              onClick={() => openAuth('login', 'learner')}
+              className="p-3 rounded-2xl border border-teal-200 bg-teal-50/50 hover:bg-teal-100/70 text-xs font-bold text-[#0F4C47] transition-all flex flex-col items-center gap-1.5 text-center group"
             >
-              <UserCheck className="w-4 h-4" />
-              <span>Learner Dashboard</span>
+              <div className="w-8 h-8 rounded-xl bg-[#0F4C47] text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                <UserCheck className="w-4 h-4" />
+              </div>
+              <span className="font-extrabold text-slate-900">Learner Portal</span>
+              <span className="text-[10px] text-teal-700 font-medium">Assessment & Upskilling</span>
             </button>
             <button
-              onClick={() => handleLaunchRole('institution')}
-              className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all flex flex-col items-center gap-1"
+              onClick={() => openAuth('login', 'institution')}
+              className="p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all flex flex-col items-center gap-1.5 text-center group"
             >
-              <Building className="w-4 h-4" />
-              <span>Institution Portal</span>
+              <div className="w-8 h-8 rounded-xl bg-slate-700 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Building className="w-4 h-4" />
+              </div>
+              <span className="font-extrabold text-slate-900">Institution Portal</span>
+              <span className="text-[10px] text-slate-500 font-medium">Batches & Attendance</span>
             </button>
             <button
-              onClick={() => handleLaunchRole('government')}
-              className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all flex flex-col items-center gap-1"
+              onClick={() => openAuth('login', 'government')}
+              className="p-3 rounded-2xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-bold text-slate-700 transition-all flex flex-col items-center gap-1.5 text-center group"
             >
-              <Shield className="w-4 h-4" />
-              <span>Government Analytics</span>
+              <div className="w-8 h-8 rounded-xl bg-slate-700 text-white flex items-center justify-center group-hover:scale-105 transition-transform">
+                <Shield className="w-4 h-4" />
+              </div>
+              <span className="font-extrabold text-slate-900">Government Portal</span>
+              <span className="text-[10px] text-slate-500 font-medium">Districts & Retention</span>
             </button>
           </div>
         </div>
@@ -216,16 +233,31 @@ export const LandingPage = ({ onGetStarted }) => {
         </div>
 
         {/* Launch CTA */}
-        <div className="text-center mt-12">
+        <div className="text-center mt-12 flex flex-col sm:flex-row items-center justify-center gap-3">
           <button
-            onClick={() => handleLaunchRole('learner')}
+            onClick={() => openAuth('register', 'learner')}
             className="px-8 py-3.5 rounded-2xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-sm font-black transition-all shadow-md inline-flex items-center gap-2"
           >
-            <span>Enter Platform Dashboard</span>
+            <span>Create Free Account</span>
             <ArrowRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => openAuth('login', 'learner')}
+            className="px-8 py-3.5 rounded-2xl bg-white border border-[#DCE8E3] hover:bg-slate-50 text-slate-800 text-sm font-bold transition-all shadow-xs inline-flex items-center gap-2"
+          >
+            <LogIn className="w-4 h-4 text-[#0F4C47]" />
+            <span>Log In to Portal</span>
           </button>
         </div>
       </section>
+
+      {/* Auth Modal with Login & Create Account Tabs */}
+      <AuthModal
+        isOpen={isAuthOpen}
+        onClose={() => setIsAuthOpen(false)}
+        initialTab={authTab}
+        initialRole={authRole}
+      />
 
       {/* Footer */}
       <footer className="bg-white border-t border-slate-200 py-8 px-6 text-center text-xs text-slate-500">

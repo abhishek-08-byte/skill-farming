@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
+import { CourseLearningView } from './CourseLearningView';
 import {
   Search,
   Filter,
@@ -15,7 +16,8 @@ import {
   Zap,
   PlayCircle,
   Award,
-  Layers
+  Layers,
+  Video
 } from 'lucide-react';
 
 export const CourseCatalog = () => {
@@ -23,13 +25,16 @@ export const CourseCatalog = () => {
     courses,
     currentUser,
     enrollInCourse,
-    updateCourseProgress
+    updateCourseProgress,
+    activeCoursePlayerId,
+    setActiveCoursePlayerId
   } = useApp();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [skillFilter, setSkillFilter] = useState('All');
   const [modeFilter, setModeFilter] = useState('All');
   const [selectedCourseDetail, setSelectedCourseDetail] = useState(null);
+  const [activeLearningCourse, setActiveLearningCourse] = useState(null);
 
   // Filter courses
   const filteredCourses = courses.filter((c) => {
@@ -49,6 +54,22 @@ export const CourseCatalog = () => {
   const getEnrollmentProgress = (courseId) => {
     return currentUser.activeCourses?.find((ac) => ac.courseId === courseId)?.progress || 0;
   };
+
+  const activeCourseToRender =
+    activeLearningCourse ||
+    (activeCoursePlayerId ? (courses.find(c => c.id === activeCoursePlayerId) || courses[0]) : null);
+
+  if (activeCourseToRender) {
+    return (
+      <CourseLearningView
+        course={activeCourseToRender}
+        onBack={() => {
+          setActiveLearningCourse(null);
+          if (setActiveCoursePlayerId) setActiveCoursePlayerId(null);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 md:pb-6 animate-in fade-in duration-200">
@@ -212,16 +233,19 @@ export const CourseCatalog = () => {
 
                 {enrolled ? (
                   <button
-                    onClick={() => updateCourseProgress(course.id, 1)}
-                    className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
+                    onClick={() => setActiveLearningCourse(course)}
+                    className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:scale-[1.02]"
                   >
                     <PlayCircle className="w-3.5 h-3.5" />
                     <span>CONTINUE LEARNING</span>
                   </button>
                 ) : (
                   <button
-                    onClick={() => enrollInCourse(course.id)}
-                    className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
+                    onClick={() => {
+                      enrollInCourse(course.id);
+                      setActiveLearningCourse(course);
+                    }}
+                    className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:scale-[1.02]"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
                     <span>ENROLL NOW</span>
@@ -313,8 +337,9 @@ export const CourseCatalog = () => {
               {isEnrolled(selectedCourseDetail.id) ? (
                 <button
                   onClick={() => {
-                    updateCourseProgress(selectedCourseDetail.id, 1);
+                    const c = selectedCourseDetail;
                     setSelectedCourseDetail(null);
+                    setActiveLearningCourse(c);
                   }}
                   className="px-5 py-2.5 rounded-xl bg-[#0F4C47] text-white text-xs font-bold hover:bg-[#0A3632] shadow-sm flex items-center gap-1.5"
                 >
@@ -324,13 +349,15 @@ export const CourseCatalog = () => {
               ) : (
                 <button
                   onClick={() => {
-                    enrollInCourse(selectedCourseDetail.id);
+                    const c = selectedCourseDetail;
+                    enrollInCourse(c.id);
                     setSelectedCourseDetail(null);
+                    setActiveLearningCourse(c);
                   }}
                   className="px-5 py-2.5 rounded-xl bg-[#0F4C47] text-white text-xs font-bold hover:bg-[#0A3632] shadow-sm flex items-center gap-1.5"
                 >
                   <BookOpen className="w-4 h-4" />
-                  <span>ENROLL NOW</span>
+                  <span>ENROLL & ENTER CLASSROOM</span>
                 </button>
               )}
             </div>

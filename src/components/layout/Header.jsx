@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Search, Bell, CheckCircle, ArrowRight, User, Shield, Building, Award } from 'lucide-react';
+import { Search, Bell, CheckCircle, ArrowRight, User, Shield, Building, Award, LogOut } from 'lucide-react';
 
 export const Header = () => {
   const {
@@ -9,7 +9,10 @@ export const Header = () => {
     setCurrentRole,
     activeTab,
     setActiveTab,
-    notifications
+    notifications,
+    currentProfileCompletion,
+    openProfileWizard,
+    logoutUser
   } = useApp();
 
   const [showNotifs, setShowNotifs] = useState(false);
@@ -33,56 +36,29 @@ export const Header = () => {
         </div>
       </div>
 
-      {/* Role Switcher & User Profile Controls */}
-      <div className="flex items-center gap-2 sm:gap-4">
-        {/* Role Quick Switcher Pills for Demonstration */}
-        <div className="hidden md:flex items-center bg-[#EDF4F1] p-1 rounded-xl border border-[#DCE8E3] text-xs font-medium">
-          <button
-            onClick={() => setCurrentRole('learner')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-              currentRole === 'learner'
-                ? 'bg-[#0F4C47] text-white shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <User className="w-3.5 h-3.5" />
-            <span>Learner</span>
-          </button>
-          <button
-            onClick={() => setCurrentRole('institution')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-              currentRole === 'institution'
-                ? 'bg-[#0F4C47] text-white shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Building className="w-3.5 h-3.5" />
-            <span>Institution</span>
-          </button>
-          <button
-            onClick={() => setCurrentRole('government')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-              currentRole === 'government'
-                ? 'bg-[#0F4C47] text-white shadow-sm font-semibold'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            <Shield className="w-3.5 h-3.5" />
-            <span>Government</span>
-          </button>
+      {/* Role Badge, Profile Controls & Sign Out */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Active Role Indicator Badge (Role slider removed per user request) */}
+        <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-[#0F4C47] text-xs font-extrabold shadow-xs shrink-0">
+          {currentRole === 'learner' && <User className="w-3.5 h-3.5 text-teal-600" />}
+          {currentRole === 'institution' && <Building className="w-3.5 h-3.5 text-teal-600" />}
+          {currentRole === 'government' && <Shield className="w-3.5 h-3.5 text-teal-600" />}
+          <span className="capitalize hidden sm:inline">
+            {currentRole === 'learner' ? 'Learner Portal' : currentRole === 'institution' ? 'Institution Portal' : 'Government / Private Portal'}
+          </span>
+          <span className="capitalize sm:hidden text-[10px] font-black">
+            {currentRole === 'learner' ? 'Learner' : currentRole === 'institution' ? 'Institution' : 'Govt / Pvt'}
+          </span>
         </div>
 
-        {/* View Landing Page Toggle */}
+        {/* Sign Out / Exit to Home */}
         <button
-          onClick={() => setActiveTab('landing')}
-          className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-all ${
-            activeTab === 'landing'
-              ? 'bg-[#0F4C47] text-white border-[#0F4C47]'
-              : 'border-[#DCE8E3] text-slate-700 hover:bg-[#F0F5F3]'
-          }`}
-          title="View Public Landing Page"
+          onClick={logoutUser}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 hover:bg-rose-50/70 transition-all text-xs font-semibold"
+          title="Sign Out to Landing Home"
         >
-          Landing
+          <LogOut className="w-3.5 h-3.5" />
+          <span className="hidden md:inline">Sign Out</span>
         </button>
 
         {/* Notification Bell with Dropdown */}
@@ -147,8 +123,40 @@ export const Header = () => {
           )}
         </div>
 
-        {/* User Pill - Matching Reference Screenshot */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+        {/* Profile Completion Indicator Pill - 100% Clearly Visible & Spacious */}
+        <button
+          onClick={() => openProfileWizard(currentRole)}
+          className={`flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-1.5 rounded-xl border transition-all text-xs font-bold shrink-0 ${
+            currentProfileCompletion.isComplete
+              ? 'bg-emerald-50 border-emerald-300 text-emerald-900 hover:bg-emerald-100 shadow-xs ring-1 ring-emerald-300/60'
+              : 'bg-[#F5F8F7] border-[#DCE8E3] hover:border-[#0F4C47] text-slate-700 hover:bg-teal-50/60'
+          }`}
+          title={`Click to complete or edit ${currentRole} profile`}
+        >
+          <div
+            className={`min-w-[36px] sm:min-w-[44px] px-1.5 sm:px-2.5 py-0.5 rounded-lg text-xs font-black text-center shadow-xs transition-colors ${
+              currentProfileCompletion.isComplete
+                ? 'bg-emerald-600 text-white'
+                : 'bg-[#0F4C47] text-white'
+            }`}
+          >
+            {currentProfileCompletion.percentage}%
+          </div>
+          <span
+            className={`hidden md:inline text-xs font-extrabold ${
+              currentProfileCompletion.isComplete ? 'text-emerald-800' : 'text-[#0F4C47]'
+            }`}
+          >
+            {currentProfileCompletion.isComplete ? '100% Complete' : 'Complete Profile'}
+          </span>
+        </button>
+
+        {/* User Pill - Clicking opens Profile Settings */}
+        <button
+          onClick={() => setActiveTab('settings')}
+          className="flex items-center gap-2.5 pl-2 border-l border-slate-200 hover:opacity-80 transition-opacity text-left"
+          title="Go to Profile Settings"
+        >
           <img
             src={currentUser.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80'}
             alt={currentUser.name}
@@ -170,7 +178,7 @@ export const Header = () => {
                 : 'governance@skillmission.gov.in'}
             </div>
           </div>
-        </div>
+        </button>
       </div>
     </header>
   );
