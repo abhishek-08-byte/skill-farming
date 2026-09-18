@@ -16,29 +16,75 @@ import {
   BLANK_PROFILES,
   SKILLS_CATALOG,
   TARGET_ROLES_CATALOG,
-  calculateProfileCompletion
+  calculateProfileCompletion,
+  INITIAL_JOBS,
+  INITIAL_JOB_APPLICATIONS,
+  INITIAL_CHAT_MESSAGES,
+  ROLE_SKILL_COURSE_MAPPING,
+  calculateJobMatch
 } from '../data/mockData';
+import { SUPPORTED_LANGUAGES, TRANSLATIONS } from '../data/translations';
 import { SKILL_QUESTIONS, getCapabilityLevel } from '../data/questions';
+import { createDefaultRecoverySession } from '../data/recoveryData';
+import confetti from 'canvas-confetti';
 
 const AppContext = createContext(null);
 
 const STORAGE_KEY = 'skill_farming_state_v1';
 
 export const AppProvider = ({ children }) => {
+  // Multi-Language Localization System ('en' | 'mr' | 'bn')
+  const [currentLanguage, setCurrentLanguage] = useState(() => {
+    const saved = localStorage.getItem('skill_farming_language');
+    return saved || 'en';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('skill_farming_language', currentLanguage);
+  }, [currentLanguage]);
+
+  const t = (key, fallback = '') => {
+    return TRANSLATIONS[currentLanguage]?.[key] || TRANSLATIONS['en']?.[key] || fallback || key;
+  };
+
   // Load state from LocalStorage or initialize with defaults
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_user');
     return saved ? JSON.parse(saved) : INITIAL_DEMO_LEARNER;
   });
 
-  const [institutionProfile, setInstitutionProfile] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY + '_institution_profile');
+  // Dedicated Employer / Recruiter profile
+  const [recruiterProfile, setRecruiterProfile] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_recruiter_profile');
     return saved ? JSON.parse(saved) : INITIAL_EMPLOYER_PROFILE;
   });
 
+  // Dedicated Institution / Academic Provider profile
+  const [institutionProfile, setInstitutionProfile] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_institution_profile');
+    return saved ? JSON.parse(saved) : INITIAL_TRAINING_PROVIDER_PROFILE;
+  });
+
+  // Dedicated Government profile (Read-only analytics & statistics)
   const [governmentProfile, setGovernmentProfile] = useState(() => {
     const saved = localStorage.getItem(STORAGE_KEY + '_gov_profile');
     return saved ? JSON.parse(saved) : INITIAL_GOVERNMENT_PROFILE;
+  });
+
+  // Job Marketplace & Candidate Application state
+  const [jobs, setJobs] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_jobs');
+    return saved ? JSON.parse(saved) : INITIAL_JOBS;
+  });
+
+  const [applications, setApplications] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_applications');
+    return saved ? JSON.parse(saved) : INITIAL_JOB_APPLICATIONS;
+  });
+
+  const [chatMessages, setChatMessages] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_chat_messages');
+    return saved ? JSON.parse(saved) : INITIAL_CHAT_MESSAGES;
   });
 
   const [isProfileWizardOpen, setIsProfileWizardOpen] = useState(false);
@@ -75,10 +121,31 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : INITIAL_NOTIFICATIONS;
   });
 
+  const [inactivityThresholdDays, setInactivityThresholdDays] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_inactivity_threshold');
+    return saved ? parseInt(saved, 10) : 14;
+  });
+
+  const [recoverySession, setRecoverySession] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY + '_recovery_session');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        // ignore
+      }
+    }
+    return createDefaultRecoverySession(currentUser?.id || 'learner-talha');
+  });
+
   // Save to LocalStorage on updates
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_user', JSON.stringify(currentUser));
   }, [currentUser]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY + '_recruiter_profile', JSON.stringify(recruiterProfile));
+  }, [recruiterProfile]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_institution_profile', JSON.stringify(institutionProfile));
@@ -87,6 +154,18 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_gov_profile', JSON.stringify(governmentProfile));
   }, [governmentProfile]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY + '_jobs', JSON.stringify(jobs));
+  }, [jobs]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY + '_applications', JSON.stringify(applications));
+  }, [applications]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY + '_chat_messages', JSON.stringify(chatMessages));
+  }, [chatMessages]);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_role', currentRole);
@@ -111,6 +190,16 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY + '_notifs', JSON.stringify(notifications));
   }, [notifications]);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY + '_inactivity_threshold', inactivityThresholdDays.toString());
+  }, [inactivityThresholdDays]);
+
+  useEffect(() => {
+    if (recoverySession) {
+      localStorage.setItem(STORAGE_KEY + '_recovery_session', JSON.stringify(recoverySession));
+    }
+  }, [recoverySession]);
 
   // Central Learner Profiles Master Registry (Synced across Institution & Government/Private Portals)
   const INITIAL_LEARNER_REGISTRY = [
@@ -287,6 +376,8 @@ export const AppProvider = ({ children }) => {
       setActiveTab('dashboard');
     } else if (role === 'institution') {
       setActiveTab('institution');
+    } else if (role === 'employer') {
+      setActiveTab('employer');
     } else if (role === 'government' || role === 'private') {
       setActiveTab('government');
     }
@@ -376,7 +467,7 @@ export const AppProvider = ({ children }) => {
     }));
   };
 
-  // Enroll in course
+  // Enroll in course (Always 100% Free with persistent Enrollment ID)
   const enrollInCourse = (courseId) => {
     const course = courses.find((c) => c.id === courseId);
     if (!course) return;
@@ -385,8 +476,13 @@ export const AppProvider = ({ children }) => {
     const exists = currentUser.activeCourses?.find((c) => c.courseId === courseId);
     if (exists) return;
 
+    const enrollmentId = 'ENR-2026-' + Math.floor(10000 + Math.random() * 90000);
+
     const newEnrollment = {
       courseId: course.id,
+      enrollmentId,
+      isFree: true,
+      fee: 0,
       title: course.title,
       category: course.tag || 'Core',
       skill: course.skill,
@@ -404,6 +500,12 @@ export const AppProvider = ({ children }) => {
       ...prev,
       activeCourses: [newEnrollment, ...(prev.activeCourses || [])]
     }));
+
+    try {
+      confetti({ particleCount: 60, spread: 60, origin: { y: 0.65 } });
+    } catch {
+      // ignore
+    }
   };
 
   const [activeCoursePlayerId, setActiveCoursePlayerId] = useState(null);
@@ -411,6 +513,11 @@ export const AppProvider = ({ children }) => {
   const openCoursePlayer = (courseId) => {
     setActiveCoursePlayerId(courseId);
     setActiveTab('course');
+  };
+
+  // Safe get enrollment progress helper
+  const getEnrollmentProgress = (courseId) => {
+    return currentUser?.activeCourses?.find((ac) => ac.courseId === courseId)?.progress || 0;
   };
 
   // Update active course progress
@@ -555,6 +662,10 @@ export const AppProvider = ({ children }) => {
     setInstitutionProfile((prev) => ({ ...prev, ...updatedFields }));
   };
 
+  const updateEmployerProfile = (updatedFields) => {
+    setRecruiterProfile((prev) => ({ ...prev, ...updatedFields }));
+  };
+
   const updateGovernmentProfile = (updatedFields) => {
     setGovernmentProfile((prev) => ({ ...prev, ...updatedFields }));
   };
@@ -577,6 +688,8 @@ export const AppProvider = ({ children }) => {
           ? BLANK_PROFILES.institution_training_provider
           : BLANK_PROFILES.institution_employer
       );
+    } else if (role === 'employer') {
+      setRecruiterProfile(BLANK_PROFILES.institution_employer);
     } else if (role === 'government') {
       setGovernmentProfile(BLANK_PROFILES.government);
     }
@@ -592,6 +705,8 @@ export const AppProvider = ({ children }) => {
           ? INITIAL_TRAINING_PROVIDER_PROFILE
           : INITIAL_EMPLOYER_PROFILE
       );
+    } else if (role === 'employer') {
+      setRecruiterProfile(INITIAL_EMPLOYER_PROFILE);
     } else if (role === 'government') {
       setGovernmentProfile(INITIAL_GOVERNMENT_PROFILE);
     }
@@ -599,6 +714,7 @@ export const AppProvider = ({ children }) => {
 
   const learnerCompletion = calculateProfileCompletion('learner', currentUser);
   const institutionCompletion = calculateProfileCompletion('institution', institutionProfile);
+  const employerCompletion = calculateProfileCompletion('employer', recruiterProfile);
   const governmentCompletion = calculateProfileCompletion('government', governmentProfile);
 
   const currentProfileCompletion =
@@ -606,6 +722,8 @@ export const AppProvider = ({ children }) => {
       ? learnerCompletion
       : currentRole === 'institution'
       ? institutionCompletion
+      : currentRole === 'employer'
+      ? employerCompletion
       : governmentCompletion;
 
   // Login User with specific role and redirect to role's dashboard
@@ -629,6 +747,15 @@ export const AppProvider = ({ children }) => {
         }));
       }
       setActiveTab('institution');
+    } else if (role === 'employer') {
+      if (email || name) {
+        setRecruiterProfile(prev => ({
+          ...prev,
+          name: name || prev.name,
+          contactEmail: email || prev.contactEmail
+        }));
+      }
+      setActiveTab('employer');
     } else if (role === 'government') {
       if (email || name) {
         setGovernmentProfile(prev => ({
@@ -642,22 +769,77 @@ export const AppProvider = ({ children }) => {
   };
 
   // Sign Up / Register New Account with specific role
-  const signupUser = ({ role = 'learner', fullName, email, orgName, department, stateName, careerGoal }) => {
+  const signupUser = ({
+    role = 'learner',
+    fullName,
+    email,
+    avatar,
+    orgName,
+    department,
+    country,
+    stateName,
+    cityName,
+    careerGoal,
+    targetRole,
+    customTargetRole,
+    targetIndustry,
+    preferredLanguages
+  }) => {
     setCurrentRole(role);
     if (role === 'learner') {
+      const chosenRole = customTargetRole?.trim() || targetRole?.trim() || careerGoal?.trim() || 'Software Developer';
       const newUser = {
         id: `learner_${Date.now()}`,
         name: fullName || 'New Learner',
         email: email || 'learner@skillfarming.org',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        education: 'Bachelor in Technology (Ongoing)',
-        targetCareer: careerGoal || 'Full Stack Engineer',
-        location: stateName || 'Bengaluru, KA',
-        currentSkills: ['DBMS', 'DSA'],
+        avatar: avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+        isNewUser: true, // Marked as new enrollee: displays fresh dashboard with profile completion and available courses
+        headline: `Aspiring ${chosenRole}`,
+        country: country || 'India',
+        state: stateName || 'Karnataka',
+        city: cityName || 'Bengaluru',
+        location: cityName && stateName ? `${cityName}, ${stateName}` : (cityName || stateName || 'India'),
+        studyLocation: {
+          institution: '',
+          state: stateName || 'Karnataka',
+          district: '',
+          city: cityName || 'Bengaluru'
+        },
+        education: '',
+        educations: [],
+        targetRole: chosenRole,
+        customTargetRole: customTargetRole || '',
+        careerProfile: {
+          targetRole: chosenRole,
+          customTargetRole: customTargetRole || '',
+          targetIndustry: targetIndustry || 'Technology & Engineering',
+          salaryExpectation: '₹4–6 LPA',
+          targetTimeline: 'Within 6 months',
+          isCustomRole: Boolean(customTargetRole)
+        },
+        targetWage: 500000,
+        targetWageFormatted: '₹5.0 LPA',
+        preferredLanguages: preferredLanguages || ['English', 'Hindi'],
+        language: (preferredLanguages || ['English', 'Hindi']).join(', '),
+        currentSkills: [],
+        userSkills: [],
+        skillsBreakdown: { strengths: [], areasToImprove: [] },
+        activeCourses: [], // 0 courses initially for new learner
         completedCourses: [],
-        attendanceRate: 100,
-        employmentStatus: 'Looking for Internship',
-        retentionStatus: 'Active'
+        overallProgress: 0,
+        attendanceRate: 0,
+        attendanceSummary: {
+          overallPercentage: 0,
+          presentSessions: 0,
+          totalSessions: 0,
+          absentSessions: 0
+        },
+        currentRank: 'New Enrollee',
+        leaderboardStatus: 'ACTIVE', // Clean status - not inactive/recovery
+        employmentStatus: 'Looking to Upskill',
+        retentionStatus: 'Active',
+        savedJobIds: [],
+        digiLockerLinked: false
       };
       setCurrentUser(newUser);
       setActiveTab('dashboard');
@@ -667,9 +849,18 @@ export const AppProvider = ({ children }) => {
         orgName: orgName || fullName || 'New Institution Partner',
         contactPerson: fullName || prev.contactPerson,
         contactEmail: email || prev.contactEmail,
-        hqLocation: stateName || prev.hqLocation
+        campusState: stateName || prev.campusState
       }));
       setActiveTab('institution');
+    } else if (role === 'employer') {
+      setRecruiterProfile(prev => ({
+        ...prev,
+        name: orgName || fullName || 'Enterprise Partner',
+        contactName: fullName || prev.contactName,
+        contactEmail: email || prev.contactEmail,
+        hqState: stateName || prev.hqState
+      }));
+      setActiveTab('employer');
     } else if (role === 'government') {
       setGovernmentProfile(prev => ({
         ...prev,
@@ -687,18 +878,379 @@ export const AppProvider = ({ children }) => {
     setActiveTab('landing');
   };
 
+  // Update learner profile
+  const updateLearnerProfile = (updates) => {
+    setCurrentUser(prev => ({
+      ...prev,
+      ...updates
+    }));
+  };
+
+  // Demo helpers to easily test fresh vs active senior learner
+  const loadDemoLearner = () => {
+    setCurrentUser(INITIAL_DEMO_LEARNER);
+    setCurrentRole('learner');
+    setActiveTab('dashboard');
+  };
+
+  const loadFreshLearner = () => {
+    signupUser({
+      role: 'learner',
+      fullName: 'Aarav Sharma',
+      email: 'aarav.sharma@skillfarming.org',
+      country: 'India',
+      stateName: 'Karnataka',
+      cityName: 'Bengaluru',
+      targetRole: 'Software Developer'
+    });
+  };
+
+  // Update recruiter profile
+  const updateRecruiterProfile = (updates) => {
+    setRecruiterProfile(prev => ({
+      ...prev,
+      ...updates
+    }));
+  };
+
+  // Toggle saving a job for learner
+  const toggleSaveJob = (jobId) => {
+    setCurrentUser(prev => {
+      const currentSaved = prev.savedJobIds || [];
+      const alreadySaved = currentSaved.includes(jobId);
+      const newSaved = alreadySaved
+        ? currentSaved.filter(id => id !== jobId)
+        : [...currentSaved, jobId];
+      return {
+        ...prev,
+        savedJobIds: newSaved
+      };
+    });
+  };
+
+  // Apply to a job with verified profile snapshot
+  const applyToJob = (jobId, candidateNote = '') => {
+    const job = jobs.find(j => j.id === jobId);
+    if (!job) return null;
+
+    const existing = applications.find(a => a.jobId === jobId && a.candidateId === currentUser.id);
+    if (existing) return existing;
+
+    const matchData = calculateJobMatch(job, currentUser);
+
+    const newApp = {
+      id: 'app-' + Date.now(),
+      jobId,
+      candidateId: currentUser.id,
+      candidateName: currentUser.name,
+      candidateEmail: currentUser.email,
+      candidatePhone: currentUser.phone,
+      candidateLocation: currentUser.location || currentUser.city,
+      studyLocation: currentUser.studyLocation ? `${currentUser.studyLocation.institution}, ${currentUser.studyLocation.district}` : 'Government College / Centre',
+      targetRole: currentUser.targetRole || 'Full Stack Web Developer',
+      targetWage: currentUser.targetWageFormatted || '₹6.5 LPA',
+      jobTitle: job.title,
+      company: job.company,
+      appliedDate: new Date().toISOString().split('T')[0],
+      stage: 'Under Review',
+      examScore: null,
+      examStatus: job.corporateExamRequired ? 'Test Invitation Pending' : 'Not Applicable',
+      interviewDate: null,
+      interviewLink: null,
+      recruiterNotes: candidateNote || 'Direct application via Skill Farming verified talent pool.',
+      matchScore: matchData.score
+    };
+
+    setApplications(prev => [newApp, ...prev]);
+
+    // Send confirmation notification
+    const newNotif = {
+      id: 'notif-' + Date.now(),
+      title: `Application Submitted: ${job.title}`,
+      message: `Your application to ${job.company} has been received and is currently Under Review.`,
+      date: 'Just now',
+      read: false,
+      action: 'VIEW APPLICATIONS',
+      type: 'job_application'
+    };
+    setNotifications(prev => [newNotif, ...prev]);
+
+    // Increment applied count
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, appliedCount: (j.appliedCount || 0) + 1 } : j));
+
+    try {
+      confetti({ particleCount: 70, spread: 60, origin: { y: 0.6 } });
+    } catch {
+      // ignore
+    }
+
+    return newApp;
+  };
+
+  // Recruiter advances application stage
+  const updateApplicationStage = (appId, newStage, details = {}) => {
+    setApplications(prev => prev.map(app => {
+      if (app.id === appId) {
+        const updated = {
+          ...app,
+          stage: newStage,
+          ...details
+        };
+        if (newStage === 'Selected') {
+          try {
+            confetti({ particleCount: 110, spread: 80, origin: { y: 0.5 } });
+          } catch {
+            // ignore
+          }
+        }
+        return updated;
+      }
+      return app;
+    }));
+
+    const app = applications.find(a => a.id === appId);
+    if (app) {
+      const stageNotif = {
+        id: 'notif-' + Date.now(),
+        title: `Application Status: ${app.jobTitle}`,
+        message: `Your application status with ${app.company} is now: ${newStage}. Check your pipeline tracker.`,
+        date: 'Just now',
+        read: false,
+        action: 'VIEW APPLICATIONS',
+        type: 'job_stage_update'
+      };
+      setNotifications(prev => [stageNotif, ...prev]);
+    }
+  };
+
+  // Employer posts a new job
+  const postNewJob = (jobData) => {
+    const newJob = {
+      id: 'job-pvt-' + Date.now(),
+      type: 'private',
+      company: recruiterProfile.name || 'Enterprise Recruiter',
+      logo: recruiterProfile.logo || 'https://images.unsplash.com/photo-1572021335469-31706a17aaef?w=120&auto=format&fit=crop&q=80',
+      postedAt: new Date().toISOString().split('T')[0],
+      appliedCount: 0,
+      openings: 3,
+      ...jobData
+    };
+    setJobs(prev => [newJob, ...prev]);
+    return newJob;
+  };
+
+  // 1-to-1 candidate chat message
+  const sendChatMessage = ({ text, recipientId, recipientName, jobId, conversationId }) => {
+    const isEmployer = currentRole === 'employer';
+    const newMsg = {
+      id: 'msg-' + Date.now(),
+      conversationId: conversationId || `conv-${currentUser.id}-${recipientId}`,
+      jobId: jobId || null,
+      senderId: isEmployer ? recruiterProfile.id || 'recruiter-anand' : currentUser.id,
+      senderName: isEmployer ? recruiterProfile.contactName || recruiterProfile.name : currentUser.name,
+      senderRole: currentRole,
+      avatar: isEmployer ? recruiterProfile.logo : currentUser.avatar,
+      recipientId,
+      recipientName,
+      text,
+      timestamp: new Date().toISOString(),
+      read: false
+    };
+    setChatMessages(prev => [...prev, newMsg]);
+    return newMsg;
+  };
+
+  // DigiLocker integration
+  const connectDigiLocker = (aadhaarNumber = '987654321098', selectedDocs = []) => {
+    const docId = 'DL-2026-KA-' + aadhaarNumber.slice(-4);
+    setCurrentUser(prev => ({
+      ...prev,
+      digiLockerLinked: true,
+      digiLockerId: docId,
+      verificationStatus: 'VERIFIED',
+      credentials: [
+        ...(prev.credentials || []),
+        {
+          id: 'cred-dl-' + Date.now(),
+          title: 'National Skill Qualification Certificate (NSQF Level 6)',
+          issuer: 'Ministry of Skill Development & Entrepreneurship (MSDE) via DigiLocker',
+          issueDate: new Date().toISOString().split('T')[0],
+          url: `https://digilocker.gov.in/verify/${docId}`
+        }
+      ]
+    }));
+    try {
+      confetti({ particleCount: 90, spread: 70, origin: { y: 0.55 } });
+    } catch {
+      // ignore
+    }
+  };
+
+  // Helper to record meaningful activity (without triggering on every trivial click)
+  const recordLearningActivity = (activityType = 'general') => {
+    const nowIso = new Date().toISOString();
+    setCurrentUser(prev => ({
+      ...prev,
+      lastActiveAt: nowIso
+    }));
+  };
+
+  // Submit a recovery challenge
+  const submitRecoveryAssignment = (challengeId, solutionCode, testResults) => {
+    const allPassed = testResults && testResults.length > 0 && testResults.every(t => t.passed);
+    const score = allPassed ? 100 : Math.round((testResults?.filter(t => t.passed).length / (testResults?.length || 1)) * 100);
+
+    setRecoverySession(prev => {
+      if (!prev) return prev;
+      const updatedAssignments = prev.assignments.map(a => {
+        if (a.id === challengeId) {
+          return {
+            ...a,
+            status: allPassed ? 'COMPLETED' : 'IN_PROGRESS',
+            submittedCode: solutionCode,
+            score,
+            attempts: (a.attempts || 0) + 1,
+            submittedAt: new Date().toISOString(),
+            feedback: allPassed
+              ? 'All deterministic test cases passed successfully!'
+              : 'Some test cases failed. Review test output and requirements.',
+            testResults
+          };
+        }
+        return a;
+      });
+
+      const completedCount = updatedAssignments.filter(a => a.status === 'COMPLETED').length;
+      const progress = Math.round((completedCount / updatedAssignments.length) * 100);
+      const isAllDone = completedCount === updatedAssignments.length;
+
+      const nextSession = {
+        ...prev,
+        assignments: updatedAssignments,
+        completedCount,
+        progress,
+        status: isAllDone ? 'RECOVERED' : prev.status,
+        completedAt: isAllDone ? new Date().toISOString() : null
+      };
+
+      if (isAllDone) {
+        setTimeout(() => {
+          completeRecoverySession();
+        }, 150);
+      }
+
+      return nextSession;
+    });
+
+    recordLearningActivity('recovery_assignment_submit');
+  };
+
+  // Mark recovery complete and reinstate leaderboard participation
+  const completeRecoverySession = () => {
+    setCurrentUser(prev => {
+      const newPoints = (prev.leaderboardPoints || 850) + 150;
+      return {
+        ...prev,
+        leaderboardStatus: 'ACTIVE',
+        leaderboardPoints: newPoints,
+        currentRank: 'Top 3%'
+      };
+    });
+
+    setRecoverySession(prev => prev ? {
+      ...prev,
+      status: 'RECOVERED',
+      progress: 100,
+      completedAt: new Date().toISOString()
+    } : null);
+
+    // Synchronize to learnersDb
+    setLearnersDb(prev => prev.map(l => l.id === currentUser.id ? {
+      ...l,
+      leaderboardStatus: 'ACTIVE',
+      leaderboardPoints: (l.leaderboardPoints || 850) + 150
+    } : l));
+
+    // Send congratulatory notification
+    const completionNotif = {
+      id: 'notif-recovery-' + Date.now(),
+      title: '🎉 Recovery Complete! Active On Leaderboard',
+      message: 'You successfully completed all required skill recovery challenges. Your leaderboard status has been restored to ACTIVE with +150 bonus points!',
+      date: 'Just now',
+      read: false,
+      action: 'VIEW LEADERBOARD',
+      type: 'recovery_done'
+    };
+    setNotifications(prev => [completionNotif, ...prev]);
+
+    // Trigger celebration confetti
+    try {
+      confetti({
+        particleCount: 120,
+        spread: 80,
+        origin: { y: 0.5 }
+      });
+    } catch {
+      // ignore
+    }
+  };
+
+  // Test simulation helpers
+  const simulateInactivity = (daysAgo = 20) => {
+    const pastDate = new Date(Date.now() - daysAgo * 24 * 60 * 60 * 1000).toISOString();
+    setCurrentUser(prev => ({
+      ...prev,
+      lastActiveAt: pastDate,
+      leaderboardStatus: 'RECOVERY_IN_PROGRESS'
+    }));
+    const newSession = createDefaultRecoverySession(currentUser?.id || 'learner-talha');
+    setRecoverySession(newSession);
+  };
+
+  const simulateActiveStatus = () => {
+    const nowIso = new Date().toISOString();
+    setCurrentUser(prev => ({
+      ...prev,
+      lastActiveAt: nowIso,
+      leaderboardStatus: 'ACTIVE'
+    }));
+    setRecoverySession(prev => prev ? { ...prev, status: 'RECOVERED', progress: 100 } : null);
+  };
+
+  const fastForwardDeadline = (hoursLeft = 2) => {
+    setRecoverySession(prev => {
+      if (!prev) return prev;
+      const newDeadline = new Date(Date.now() + hoursLeft * 60 * 60 * 1000).toISOString();
+      return {
+        ...prev,
+        deadlineAt: newDeadline
+      };
+    });
+  };
+
+  const resetRecoverySession = () => {
+    const freshSession = createDefaultRecoverySession(currentUser?.id || 'learner-talha');
+    setRecoverySession(freshSession);
+  };
+
   // Reset to default demo data
   const resetDemoData = () => {
     localStorage.clear();
     setCurrentUser(INITIAL_DEMO_LEARNER);
-    setInstitutionProfile(INITIAL_EMPLOYER_PROFILE);
+    setRecruiterProfile(INITIAL_EMPLOYER_PROFILE);
+    setInstitutionProfile(INITIAL_TRAINING_PROVIDER_PROFILE);
     setGovernmentProfile(INITIAL_GOVERNMENT_PROFILE);
+    setJobs(INITIAL_JOBS);
+    setApplications(INITIAL_JOB_APPLICATIONS);
+    setChatMessages(INITIAL_CHAT_MESSAGES);
     setCurrentRole('learner');
     setActiveTab('landing');
     setCourses(COURSES);
     setBatches(BATCHES);
     setLearnersDb(MOCK_LEARNERS_DATABASE);
     setNotifications(INITIAL_NOTIFICATIONS);
+    setInactivityThresholdDays(14);
+    setRecoverySession(createDefaultRecoverySession('learner-talha'));
   };
 
   return (
@@ -706,6 +1258,9 @@ export const AppProvider = ({ children }) => {
       value={{
         currentUser,
         setCurrentUser,
+        recruiterProfile,
+        setRecruiterProfile,
+        updateRecruiterProfile,
         institutionProfile,
         setInstitutionProfile,
         governmentProfile,
@@ -731,6 +1286,7 @@ export const AppProvider = ({ children }) => {
         activeCoursePlayerId,
         setActiveCoursePlayerId,
         openCoursePlayer,
+        getEnrollmentProgress,
         updateEmploymentOutcome,
         learnerProfilesRegistry,
         setLearnerProfilesRegistry,
@@ -742,6 +1298,8 @@ export const AppProvider = ({ children }) => {
         loginUser,
         signupUser,
         logoutUser,
+        loadDemoLearner,
+        loadFreshLearner,
         // Profile & Wizard extensions
         isProfileWizardOpen,
         profileWizardRole,
@@ -750,16 +1308,53 @@ export const AppProvider = ({ children }) => {
         closeProfileWizard,
         updateUserProfile,
         updateInstitutionProfile,
+        updateEmployerProfile,
+        updateRecruiterProfile: updateEmployerProfile,
         updateGovernmentProfile,
         switchInstitutionSubType,
         simulateBlankProfile,
         simulateFilledProfile,
         learnerCompletion,
         institutionCompletion,
+        employerCompletion,
         governmentCompletion,
         currentProfileCompletion,
         skillsCatalog: SKILLS_CATALOG,
-        targetRolesCatalog: TARGET_ROLES_CATALOG
+        targetRolesCatalog: TARGET_ROLES_CATALOG,
+        // Skill Recovery & Inactivity System
+        inactivityThresholdDays,
+        setInactivityThresholdDays,
+        recoverySession,
+        setRecoverySession,
+        recordLearningActivity,
+        submitRecoveryAssignment,
+        completeRecoverySession,
+        simulateInactivity,
+        simulateActiveStatus,
+        fastForwardDeadline,
+        resetRecoverySession,
+        // Job Marketplace, Applications, Recruiter & DigiLocker
+        jobs,
+        setJobs,
+        applications,
+        setApplications,
+        chatMessages,
+        setChatMessages,
+        toggleSaveJob,
+        applyToJob,
+        updateApplicationStage,
+        postNewJob,
+        sendChatMessage,
+        connectDigiLocker,
+        updateLearnerProfile,
+        roleSkillCourseMapping: ROLE_SKILL_COURSE_MAPPING,
+        calculateJobMatch,
+        // Multi-language system
+        currentLanguage,
+        setCurrentLanguage,
+        supportedLanguages: SUPPORTED_LANGUAGES,
+        translations: TRANSLATIONS,
+        t
       }}
     >
       {children}

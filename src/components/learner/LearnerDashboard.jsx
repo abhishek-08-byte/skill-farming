@@ -17,24 +17,63 @@ import {
   CheckCircle2,
   Calendar,
   Layers,
-  Briefcase
+  Briefcase,
+  Trophy,
+  AlertTriangle,
+  ShieldCheck,
+  MapPin,
+  Building,
+  GraduationCap,
+  Bookmark,
+  DollarSign,
+  Lock,
+  Code
 } from 'lucide-react';
 
 export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
   const {
     currentUser,
+    learnerCompletion,
     setActiveTab,
     updateCourseProgress,
-    openCoursePlayer
+    openCoursePlayer,
+    recoverySession,
+    jobs,
+    savedJobIds,
+    toggleSaveJob,
+    applyToJob,
+    courses,
+    enrollInCourse,
+    openProfileWizard,
+    loadDemoLearner,
+    loadFreshLearner
   } = useApp();
+
+  const userTargetRole = currentUser?.customTargetRole || currentUser?.targetRole || 'Software Developer';
+  const isElectricalRole = userTargetRole.toLowerCase().includes('electrical') || userTargetRole.toLowerCase().includes('electrician');
+  const isProfileLocked = (learnerCompletion?.percentage || 0) < 100;
+
+  // Filter courses available for user: If not electrical role, do NOT show electrical courses
+  const filteredAvailableCourses = (courses || []).filter((c) => {
+    if (!isElectricalRole && (c.skillId === 'electrical' || c.skill === 'Electrical Works')) {
+      return false;
+    }
+    return true;
+  });
+
+  const isNewLearner = Boolean(currentUser?.isNewUser) || 
+    ((!currentUser?.activeCourses || currentUser.activeCourses.length === 0) && (!currentUser?.attendanceSummary || currentUser.attendanceSummary?.totalSessions === 0));
+
+  const isUserMasked = currentUser?.leaderboardStatus !== 'ACTIVE';
 
   const [filterDomain, setFilterDomain] = useState('All');
   const [selectedDay, setSelectedDay] = useState('Fri');
+  const [showAttendanceHistoryModal, setShowAttendanceHistoryModal] = useState(false);
 
-  // Attendance calculation
-  const attendance = currentUser.attendanceSummary?.overallPercentage || 80;
-  const presentSessions = currentUser.attendanceSummary?.presentSessions || 40;
-  const totalSessions = currentUser.attendanceSummary?.totalSessions || 50;
+  // Attendance calculation for active learners
+  const attendance = currentUser.attendanceSummary?.overallPercentage ?? 80;
+  const presentSessions = currentUser.attendanceSummary?.presentSessions ?? 40;
+  const totalSessions = currentUser.attendanceSummary?.totalSessions ?? 50;
   const absentSessions = totalSessions - presentSessions;
 
   // Donut SVG parameters
@@ -44,8 +83,201 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
   const circumference = 2 * Math.PI * radius;
   const presentOffset = circumference - (attendance / 100) * circumference;
 
+  // -------------------------------------------------------------
+  // FRESH DASHBOARD FOR NEW ENROLLED LEARNERS:
+  // Shows ONLY Profile Completion and Available Courses
+  // No fake 80% attendance or inactive recovery challenges!
+  // -------------------------------------------------------------
+  if (isNewLearner) {
+    return (
+      <div className="space-y-6 pb-16 md:pb-6 max-w-7xl mx-auto animate-in fade-in duration-200">
+        {/* Top Header Controls / Switcher Bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-4 rounded-2xl border border-slate-200 shadow-2xs">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-teal-50 text-[#0F4C47] flex items-center justify-center font-bold text-xs border border-teal-200">
+              🌱
+            </div>
+            <div>
+              <span className="text-xs font-black text-slate-800">Fresh Enrollee Dashboard</span>
+              <p className="text-[11px] text-slate-500">
+                You are enrolled as a new learner. Complete your profile and enroll in courses to begin tracking your live learning progress.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 self-start sm:self-auto">
+            <span className="text-[11px] font-semibold text-slate-500">Demo Toggle:</span>
+            <button
+              onClick={loadDemoLearner}
+              className="px-2.5 py-1 rounded-lg border border-slate-200 hover:border-teal-600 text-[11px] font-bold text-slate-700 hover:text-[#0F4C47] transition-colors cursor-pointer bg-slate-50"
+              title="Preview sample senior learner dashboard (Rohan Sharma)"
+            >
+              View Senior Student Demo →
+            </button>
+          </div>
+        </div>
+
+        {/* 1. FRESH LEARNER HERO GREETING BANNER */}
+        <div className="farming-hero p-6 sm:p-8 rounded-3xl relative overflow-hidden flex flex-col justify-between shadow-md">
+          {/* Background book / seedling illustration */}
+          <div className="absolute -right-6 -bottom-6 sm:right-6 sm:bottom-4 opacity-25 pointer-events-none">
+            <svg width="220" height="180" viewBox="0 0 220 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path
+                d="M110 30C85 20 40 20 10 35V160C40 145 85 145 110 160C135 145 180 145 210 160V35C180 20 135 20 110 30Z"
+                stroke="white"
+                strokeWidth="6"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+              <path d="M110 30V160" stroke="white" strokeWidth="6" strokeLinecap="round" />
+              <path d="M110 65C85 55 45 55 20 70" stroke="white" strokeWidth="4" strokeLinecap="round" />
+              <path d="M110 100C85 90 45 90 20 105" stroke="white" strokeWidth="4" strokeLinecap="round" />
+            </svg>
+          </div>
+
+          <div>
+            <div className="text-xs font-semibold text-teal-200 tracking-wide mb-1 flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>Account Activated • Enrolled Today</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white tracking-tight">
+              Welcome, {currentUser.name?.split(' ')[0] || 'Learner'}!
+            </h1>
+            <p className="text-xs sm:text-sm text-teal-100/90 max-w-xl mt-1.5 leading-relaxed">
+              Your learning journey begins here. Complete your learner profile to unlock personalized course recommendations, and enroll in your first course from the catalog below.
+            </p>
+          </div>
+
+          {/* Quick Info Badges */}
+          <div className="mt-6 flex flex-wrap items-center gap-3 relative z-10">
+            <div className="flex items-center gap-2.5 bg-white/15 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/20 text-white text-xs">
+              <span className="font-bold text-teal-200">Target Role:</span>
+              <span className="font-black text-white">{currentUser.customTargetRole || currentUser.targetRole || 'Software Developer'}</span>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white/15 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/20 text-white text-xs">
+              <span className="font-bold text-teal-200">Current Location:</span>
+              <span className="font-black text-white">{currentUser.city || currentUser.state || 'India'}</span>
+            </div>
+            <div className="flex items-center gap-2.5 bg-white/15 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/20 text-white text-xs">
+              <span className="font-bold text-teal-200">Active Courses:</span>
+              <span className="font-bold text-white">0 Enrolled</span>
+            </div>
+
+            <button
+              onClick={() => openProfileWizard('learner', 1)}
+              className="ml-auto bg-white text-[#0F4C47] hover:bg-teal-50 px-4 py-2.5 rounded-xl font-extrabold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-2 hover:scale-[1.02] cursor-pointer"
+            >
+              <Sparkles className="w-4 h-4 text-teal-600" />
+              <span>Complete Profile Now →</span>
+            </button>
+          </div>
+        </div>
+
+        {/* 2. PROFILE COMPLETION CALLOUT */}
+        <ProfileCompletionCard role="learner" />
+
+        {/* 3. AVAILABLE COURSES SECTION (For New Learner to Enroll) */}
+        <div className="farming-card p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-100">
+            <div>
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-700">
+                <BookOpen className="w-4 h-4" />
+                <span>Course Catalog for New Learners</span>
+              </div>
+              <h2 className="text-xl font-black text-slate-900 mt-1">
+                Available Courses for Enrollment
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Choose from foundational and industry-aligned courses. Enroll for 100% free to start building job-ready skills.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500">{filteredAvailableCourses?.length || 0} Courses Available</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {filteredAvailableCourses?.map((course) => {
+              const isEnrolled = currentUser.activeCourses?.some((c) => c.courseId === course.id);
+              return (
+                <div
+                  key={course.id}
+                  className="farming-card p-4 border border-slate-200 hover:border-[#0F4C47] flex flex-col justify-between transition-all hover:shadow-md group bg-white"
+                >
+                  <div>
+                    <div className="flex items-start justify-between gap-2 mb-2.5">
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-teal-50 text-[#0F4C47] border border-teal-200">
+                        {course.tag || course.skill || 'Foundation'}
+                      </span>
+                      <span className="text-[10px] font-bold text-slate-500">
+                        {course.duration || '40 Hours'}
+                      </span>
+                    </div>
+
+                    <h3 className="font-bold text-sm text-slate-900 leading-snug group-hover:text-[#0F4C47] transition-colors line-clamp-2">
+                      {course.title}
+                    </h3>
+
+                    <p className="text-xs text-slate-500 mt-1.5 line-clamp-2 leading-relaxed">
+                      {course.description || 'Comprehensive industry-aligned curriculum designed for hands-on mastery.'}
+                    </p>
+
+                    <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-600">
+                      <span className="flex items-center gap-1 font-semibold">
+                        <Clock className="w-3 h-3 text-teal-600" />
+                        <span>{course.modulesCount || 8} Modules</span>
+                      </span>
+                      <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                        100% Free
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-4">
+                    {isEnrolled ? (
+                      <button
+                        onClick={() => {
+                          if (openCoursePlayer) openCoursePlayer(course.id);
+                          else if (onSelectCourse) onSelectCourse(course.id);
+                        }}
+                        className="w-full py-2 px-3 rounded-xl bg-teal-50 border border-teal-300 text-[#0F4C47] font-extrabold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer hover:bg-teal-100"
+                      >
+                        <CheckCircle2 className="w-3.5 h-3.5 text-teal-600" />
+                        <span>Enrolled • Start Learning</span>
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => enrollInCourse(course.id)}
+                        className="w-full py-2 px-3 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white font-extrabold text-xs flex items-center justify-center gap-1.5 transition-all shadow-xs hover:scale-[1.01] cursor-pointer"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>Enroll Now (Free)</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // -------------------------------------------------------------
+  // ACTIVE / SENIOR LEARNER DASHBOARD (Full Analytics & Attendance)
+  // -------------------------------------------------------------
   return (
     <div className="space-y-6 pb-16 md:pb-6 max-w-7xl mx-auto animate-in fade-in duration-200">
+      {/* Top Demo Toggle Bar for active learner */}
+      <div className="flex items-center justify-between bg-white px-4 py-2 rounded-xl border border-slate-200 text-xs text-slate-500">
+        <span className="font-semibold text-slate-700">Senior Student Demo View (Active Student)</span>
+        <button
+          onClick={loadFreshLearner}
+          className="text-xs font-bold text-teal-700 hover:underline cursor-pointer"
+        >
+          Switch to Fresh Enrollee View →
+        </button>
+      </div>
       {/* TOP ROW: Hero Greeting Banner + Attendance Gauge */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
         {/* Left 2 Cols: Hero Greeting Card - Matches Reference Banner */}
@@ -93,24 +325,54 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
               </div>
             </div>
 
-            {/* Current Rank Badge */}
-            <div className="flex items-center gap-3 bg-white/12 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/15">
-              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white">
-                <Award className="w-4 h-4" />
+            {/* Current Rank Badge - Clicking opens Leaderboard or Recovery */}
+            <button
+              onClick={() => {
+                if (isUserMasked) setActiveTab('masking');
+                else setActiveTab('leaderboard');
+              }}
+              className="flex items-center gap-3 bg-white/12 hover:bg-white/20 backdrop-blur-md px-4 py-2.5 rounded-2xl border border-white/15 transition-all text-left cursor-pointer hover:scale-[1.02]"
+              title={isUserMasked ? 'Click to Get Back on Track and restore rank' : 'Click to view student leaderboard'}
+            >
+              <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-white shrink-0">
+                {isUserMasked ? <Trophy className="w-4 h-4 text-amber-300" /> : <Award className="w-4 h-4" />}
               </div>
               <div>
-                <div className="text-[10px] uppercase font-semibold text-teal-200">Current Rank</div>
-                <div className="text-lg font-extrabold text-white">{currentUser.currentRank || 'Top 4%'}</div>
+                <div className="text-[10px] uppercase font-semibold text-teal-200">
+                  {isUserMasked ? 'Rank (Masked)' : 'Current Rank'}
+                </div>
+                <div className="text-lg font-extrabold text-white flex items-center gap-1.5">
+                  <span>{isUserMasked ? 'Inactive' : currentUser.currentRank || 'Top 4%'}</span>
+                  {isUserMasked && (
+                    <span className="text-[10px] bg-amber-400 text-slate-950 font-bold px-1.5 py-0.2 rounded-md">
+                      Recover →
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
+            </button>
 
-            {/* Take Assessment Primary CTA */}
+            {/* Take Assessment Primary CTA with Lock awareness */}
             <button
               onClick={onOpenAssessment}
-              className="ml-auto bg-white text-[#0F4C47] hover:bg-teal-50 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-2 hover:scale-[1.02]"
+              className={`ml-auto px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-2 cursor-pointer ${
+                isProfileLocked
+                  ? 'bg-amber-100/90 text-amber-950 border border-amber-300 hover:bg-amber-200'
+                  : 'bg-white text-[#0F4C47] hover:bg-teal-50 hover:scale-[1.02]'
+              }`}
+              title={isProfileLocked ? 'Profile must be 100% complete to unlock skill assessment' : 'Take standardized capability evaluation'}
             >
-              <Sparkles className="w-4 h-4 text-teal-600" />
-              <span>Take Skill Assessment</span>
+              {isProfileLocked ? (
+                <>
+                  <Lock className="w-3.5 h-3.5 text-amber-800" />
+                  <span>Assessment Locked ({learnerCompletion?.percentage || 0}%)</span>
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-4 h-4 text-teal-600" />
+                  <span>Take Skill Assessment</span>
+                </>
+              )}
             </button>
           </div>
         </div>
@@ -164,34 +426,225 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
             </div>
           </div>
 
-          {/* Date Selector Indicator */}
+          {/* Date Selector Indicator - Clickable Modal Trigger */}
           <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
-            <button className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-slate-900">
+            <button
+              onClick={() => setShowAttendanceHistoryModal(true)}
+              className="flex items-center gap-2 text-xs font-semibold text-slate-700 hover:text-[#0F4C47] transition-colors cursor-pointer group"
+              title="Click to view detailed session log & punch records"
+            >
+              <Calendar className="w-3.5 h-3.5 text-teal-600 group-hover:scale-110 transition-transform" />
               <span>April-25-2026</span>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700" />
             </button>
-            <span className="text-[11px] text-slate-500">{presentSessions}/{totalSessions} sessions</span>
+            <span className="text-[11px] text-slate-500 font-semibold">{presentSessions}/{totalSessions} sessions</span>
           </div>
         </div>
       </div>
 
+      {/* GET BACK ON TRACK CALLOUT CARD (Visible when learner is inactive/masked) */}
+      {isUserMasked && (
+        <div className="farming-card p-5 sm:p-6 bg-gradient-to-r from-amber-500/10 via-teal-500/10 to-[#0F4C47]/10 border-2 border-amber-300 shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-in fade-in duration-200">
+          <div className="flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-amber-500 text-white flex items-center justify-center text-xl shadow-sm shrink-0">
+              ⚡
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 bg-amber-200 px-2 py-0.5 rounded-md">
+                  Recovery Challenges Waiting
+                </span>
+                <span className="text-xs text-slate-500 font-semibold">
+                  Leaderboard Status: Currently Inactive
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-slate-900 mt-1">
+                GET BACK ON TRACK
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-0.5">
+                You have recovery challenges waiting for you. Complete them to return to the active leaderboard.
+              </p>
+              <div className="flex items-center gap-3 text-xs font-bold text-[#0F4C47] mt-2">
+                <span>{recoverySession?.completedCount || 0} / {recoverySession?.totalRequired || 4} completed</span>
+                <span>•</span>
+                <span className="text-amber-800">
+                  {recoverySession?.deadlineAt
+                    ? `${Math.max(0, Math.ceil((new Date(recoverySession.deadlineAt) - new Date()) / (1000 * 60 * 60 * 24)))} days remaining`
+                    : '14 days remaining'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveTab('masking')}
+            className="px-5 py-2.5 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white font-extrabold text-xs sm:text-sm shadow-md transition-all flex items-center justify-center gap-2 self-start sm:self-auto hover:scale-[1.02] shrink-0"
+          >
+            <span>Continue Recovery →</span>
+          </button>
+        </div>
+      )}
+
       {/* PROFILE COMPLETION CALLOUT */}
       <ProfileCompletionCard role="learner" />
 
-      {/* MIDDLE ROW: Active Courses Cards - Matches Reference Image (Mathematics, Biology, English Lit, Modern Art) */}
+      {/* TARGET CAREER & STUDY LOCATION ROADMAP CARD */}
+      <div className="farming-card p-5 sm:p-6 bg-white border border-teal-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-5">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-teal-50 text-[#0F4C47] border border-teal-200 flex items-center justify-center text-xl shrink-0 shadow-xs">
+            🎯
+          </div>
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <span className="text-[10px] uppercase font-black tracking-wider bg-teal-50 text-teal-800 px-2 py-0.5 rounded-md border border-teal-200">
+                Target Career Destination
+              </span>
+              {currentUser.digiLockerLinked ? (
+                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 flex items-center gap-1">
+                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  DigiLocker Verified ({currentUser.digiLockerId || 'DL-2026-KA-99481'})
+                </span>
+              ) : (
+                <button
+                  onClick={() => setActiveTab('settings')}
+                  className="text-[10px] font-bold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200 hover:bg-amber-100 transition-colors"
+                >
+                  ⚡ Connect DigiLocker Identity
+                </button>
+              )}
+            </div>
+            <h2 className="text-lg sm:text-xl font-black text-slate-900 leading-tight">
+              {currentUser.customTargetRole || currentUser.targetRole || 'Full Stack Web Developer'}
+            </h2>
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 mt-1.5 font-medium">
+              <span className="flex items-center gap-1 text-slate-700">
+                <GraduationCap className="w-3.5 h-3.5 text-teal-600" />
+                <strong>Study / Training:</strong> {currentUser.studyLocation?.institution || 'Government Technical Training Centre'}, {currentUser.studyLocation?.city || 'Pune'}
+              </span>
+              <span className="flex items-center gap-1 text-slate-700">
+                <DollarSign className="w-3.5 h-3.5 text-emerald-600" />
+                <strong>Wage Target:</strong> ₹{((currentUser.targetWage || 650000) / 100000).toFixed(1)} LPA
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 self-start md:self-auto shrink-0">
+          <button
+            onClick={() => setActiveTab('jobs')}
+            className="px-4 py-2.5 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5"
+          >
+            <Briefcase className="w-3.5 h-3.5" />
+            <span>Discover Matched Jobs</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('settings')}
+            className="px-3 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 text-xs font-bold transition-all"
+            title="Edit target role and location in settings"
+          >
+            Edit Goal
+          </button>
+        </div>
+      </div>
+
+      {/* RECOMMENDED CAREER OPPORTUNITIES (PRIVATE & GOVT) */}
+      <div className="farming-card p-5">
+        <div className="flex items-center justify-between mb-4">
+          <div>
+            <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-700">
+              <Briefcase className="w-3.5 h-3.5" />
+              <span>Direct Hiring Pipeline</span>
+            </div>
+            <h3 className="text-base font-bold text-slate-900 mt-0.5">
+              Recommended Career Opportunities
+            </h3>
+            <p className="text-xs text-slate-500">
+              Verified corporate openings and official government posts matching your certified skill profile.
+            </p>
+          </div>
+          <button
+            onClick={() => setActiveTab('jobs')}
+            className="text-xs font-bold text-[#0F4C47] hover:underline flex items-center gap-1"
+          >
+            <span>Explore All Openings ({jobs?.length || 5})</span>
+            <ArrowUpRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          {jobs?.slice(0, 3).map((job) => {
+            const isSaved = savedJobIds?.includes(job.id);
+            return (
+              <div
+                key={job.id}
+                className="p-4 rounded-2xl border border-slate-200 hover:border-[#0F4C47] bg-white transition-all flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full ${
+                      job.type === 'GOVT' 
+                        ? 'bg-amber-100 text-amber-900 border border-amber-200'
+                        : 'bg-teal-50 text-[#0F4C47] border border-teal-200'
+                    }`}>
+                      {job.type === 'GOVT' ? '🏛️ Official Govt Post' : '🏢 Private Tech & Core'}
+                    </span>
+                    <button
+                      onClick={() => toggleSaveJob(job.id)}
+                      className={`p-1.5 rounded-lg transition-colors ${
+                        isSaved ? 'text-amber-600 bg-amber-50' : 'text-slate-400 hover:text-slate-700'
+                      }`}
+                      title={isSaved ? 'Saved to bookmarks' : 'Save job'}
+                    >
+                      <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-current' : ''}`} />
+                    </button>
+                  </div>
+
+                  <h4 className="font-bold text-sm text-slate-900 leading-snug line-clamp-1">{job.title}</h4>
+                  <div className="text-xs text-slate-500 font-medium mt-0.5">{job.company} • {job.location}</div>
+
+                  <div className="mt-3 flex items-center justify-between text-xs">
+                    <span className="font-extrabold text-[#0F4C47]">{job.wage}</span>
+                    <span className="font-bold text-[11px] px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      {job.matchScore || 90}% Match
+                    </span>
+                  </div>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center gap-2">
+                  <button
+                    onClick={() => setActiveTab('jobs')}
+                    className="flex-1 py-1.5 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold text-center transition-colors"
+                  >
+                    View & Apply
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* MIDDLE ROW: Active Courses Cards */}
       <div>
         <div className="flex items-center justify-between mb-3">
           <h2 className="text-base font-bold text-slate-900">Enrolled Courses & Active Progress</h2>
           <button
             onClick={() => setActiveTab('course')}
-            className="text-xs font-semibold text-[#0F4C47] hover:underline"
+            className="text-xs font-semibold text-[#0F4C47] hover:underline cursor-pointer"
           >
             View All Courses →
           </button>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {currentUser.activeCourses?.map((course) => {
+          {(currentUser.activeCourses || [])
+            .filter((course) => {
+              if (!isElectricalRole && (course.skill === 'Electrical Works' || course.skillId === 'electrical')) {
+                return false;
+              }
+              return true;
+            })
+            .map((course) => {
             // Pill color mapping
             const pillStyles = {
               Advanced: 'bg-[#E2F1ED] text-[#0F4C47]',
@@ -209,18 +662,24 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
             }[course.categoryColor] || 'bg-[#0F4C47]';
 
             return (
-              <div key={course.courseId} className="farming-card p-4 flex flex-col justify-between">
+              <div key={course.courseId} className="farming-card p-4 flex flex-col justify-between hover:border-teal-300 transition-all">
                 <div>
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-700 border border-slate-100">
                       {course.skill === 'DBMS' && <Database className="w-4 h-4 text-[#0F4C47]" />}
-                      {course.skill === 'DSA' && <Binary className="w-4 h-4 text-amber-700]" />}
+                      {course.skill === 'DSA' && <Binary className="w-4 h-4 text-amber-700" />}
                       {course.skill === 'Electrical Works' && <Zap className="w-4 h-4 text-emerald-700" />}
                       {course.skill === 'Backend' && <Palette className="w-4 h-4 text-purple-700" />}
+                      {course.skill === 'Web Development' && <Code className="w-4 h-4 text-teal-700" />}
                     </div>
-                    <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${pillStyles}`}>
-                      {course.category}
-                    </span>
+                    <div className="flex flex-col items-end gap-1">
+                      <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${pillStyles}`}>
+                        {course.category}
+                      </span>
+                      <span className="font-mono text-[9px] text-teal-800 bg-teal-50 px-1.5 py-0.5 rounded border border-teal-200 font-bold">
+                        {course.enrollmentId || 'ENR-2026-08112'}
+                      </span>
+                    </div>
                   </div>
 
                   <h3 className="font-bold text-sm text-slate-900 line-clamp-1 mt-1" title={course.title}>
@@ -254,7 +713,7 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
                     if (openCoursePlayer) openCoursePlayer(course.courseId);
                     else if (onSelectCourse) onSelectCourse(course.courseId);
                   }}
-                  className="mt-4 w-full py-2 px-3 rounded-xl border border-[#DCE8E3] hover:border-[#0F4C47] text-[#0F4C47] hover:bg-[#F0F6F4] text-xs font-bold transition-colors text-center"
+                  className="mt-4 w-full py-2 px-3 rounded-xl border border-[#DCE8E3] hover:border-[#0F4C47] text-[#0F4C47] hover:bg-[#F0F6F4] text-xs font-bold transition-colors text-center cursor-pointer"
                 >
                   Resume Learning
                 </button>
@@ -279,10 +738,11 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
                 onChange={(e) => setFilterDomain(e.target.value)}
                 className="text-xs font-semibold text-slate-700 bg-[#F5F8F7] border border-[#DCE8E3] rounded-lg px-2.5 py-1 outline-none cursor-pointer"
               >
-                <option value="All">Reading ⌵</option>
+                <option value="All">All Domains ⌵</option>
+                <option value="Software">Software Engineering</option>
                 <option value="DBMS">DBMS / SQL</option>
                 <option value="DSA">DSA Logic</option>
-                <option value="Electrical">Electrical</option>
+                {isElectricalRole && <option value="Electrical">Electrical Works</option>}
               </select>
             </div>
           </div>
@@ -454,13 +914,84 @@ export const LearnerDashboard = ({ onOpenAssessment, onSelectCourse }) => {
 
           <button
             onClick={onOpenAssessment}
-            className="mt-4 w-full py-2 px-3 rounded-xl bg-teal-400 hover:bg-teal-300 text-[#093A36] font-bold text-xs transition-colors flex items-center justify-center gap-2"
+            className="mt-4 w-full py-2 px-3 rounded-xl bg-teal-400 hover:bg-teal-300 text-[#093A36] font-bold text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
           >
             <span>Start Practice Assessment</span>
             <ArrowUpRight className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
+
+      {/* ATTENDANCE RECORD MODAL (TRIGGERED BY DATE SELECTOR) */}
+      {showAttendanceHistoryModal && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 z-50 animate-in fade-in duration-150">
+          <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200">
+            <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+              <div className="flex items-center gap-2">
+                <Calendar className="w-5 h-5 text-teal-700" />
+                <h3 className="font-extrabold text-base text-slate-900">
+                  Biometric Attendance & Session Logs
+                </h3>
+              </div>
+              <button
+                onClick={() => setShowAttendanceHistoryModal(false)}
+                className="p-1 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-200 transition-colors cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
+              <div className="flex items-center justify-between bg-teal-50/70 p-4 rounded-2xl border border-teal-100">
+                <div>
+                  <div className="text-[10px] uppercase font-black text-teal-700">Official Record</div>
+                  <div className="text-xl font-black text-[#0F4C47]">{attendance}% Logged Present</div>
+                  <div className="text-xs text-slate-600 mt-0.5">
+                    {presentSessions} Present • {totalSessions - presentSessions} Absent of {totalSessions} scheduled lectures
+                  </div>
+                </div>
+                <div className="w-12 h-12 rounded-2xl bg-white text-[#0F4C47] flex items-center justify-center font-black text-sm border border-teal-200 shadow-2xs">
+                  {presentSessions}/{totalSessions}
+                </div>
+              </div>
+
+              <div>
+                <div className="text-xs font-bold text-slate-700 mb-2">Recent Session Audit:</div>
+                <div className="space-y-2">
+                  {[
+                    { date: 'Today, 18 Sep 2026', time: '09:30 AM', status: 'Present', mode: 'Biometric Verified', ok: true },
+                    { date: 'Yesterday, 17 Sep 2026', time: '09:28 AM', status: 'Present', mode: 'RFID Reader #4', ok: true },
+                    { date: '16 Sep 2026', time: '09:35 AM', status: 'Present', mode: 'Biometric Verified', ok: true },
+                    { date: '15 Sep 2026', time: '—', status: 'Absent', mode: 'Excused Leave (Medical)', ok: false },
+                    { date: '14 Sep 2026', time: '09:25 AM', status: 'Present', mode: 'Biometric Verified', ok: true }
+                  ].map((rec, rIdx) => (
+                    <div key={rIdx} className="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50/50 text-xs">
+                      <div>
+                        <div className="font-bold text-slate-800">{rec.date}</div>
+                        <div className="text-[10px] text-slate-500 mt-0.5">{rec.time} • {rec.mode}</div>
+                      </div>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                        rec.ok ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      }`}>
+                        {rec.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-end">
+              <button
+                onClick={() => setShowAttendanceHistoryModal(false)}
+                className="px-5 py-2 rounded-xl bg-[#0F4C47] text-white text-xs font-bold hover:bg-[#0A3632] transition-colors cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

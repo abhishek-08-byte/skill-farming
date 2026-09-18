@@ -14,10 +14,36 @@ import { InstitutionPortal } from './components/institution/InstitutionPortal';
 import { GovernmentPortal } from './components/government/GovernmentPortal';
 import { LandingPage } from './components/landing/LandingPage';
 import { CompleteProfileWizard } from './components/profile/CompleteProfileWizard';
+import { RecoveryView } from './components/learner/RecoveryView';
+import { LeaderboardView } from './components/learner/LeaderboardView';
+import { JobMarketplaceView } from './components/learner/JobMarketplaceView';
+import { EmployerPortal } from './components/employer/EmployerPortal';
 
 const MainLayout = () => {
   const { activeTab, setActiveTab, currentRole } = useApp();
   const [isAssessmentOpen, setIsAssessmentOpen] = useState(false);
+
+  // Synchronize URL hash for /masking and direct link support
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#', '').replace('/', '');
+      if (hash === 'masking' || hash === 'recovery') {
+        setActiveTab('masking');
+      } else if (hash === 'leaderboard') {
+        setActiveTab('leaderboard');
+      } else if (hash === 'jobs' || hash === 'marketplace') {
+        setActiveTab('jobs');
+      } else if (hash === 'employer' || hash === 'recruiter') {
+        setActiveTab('employer');
+      } else if (hash === 'settings' || hash === 'profile') {
+        setActiveTab('settings');
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, [setActiveTab]);
 
   // If user navigates to public landing page
   if (activeTab === 'landing') {
@@ -71,6 +97,29 @@ const MainLayout = () => {
 
           {currentRole === 'learner' && activeTab === 'employment' && (
             <EmploymentFollowup />
+          )}
+
+          {/* Skill Recovery / Get Back on Track dedicated interface */}
+          {currentRole === 'learner' && (activeTab === 'masking' || activeTab === 'recovery') && (
+            <RecoveryView
+              onGoToLeaderboard={() => setActiveTab('leaderboard')}
+              onGoToDashboard={() => setActiveTab('dashboard')}
+            />
+          )}
+
+          {/* Leaderboard View with Active vs Masked rosters */}
+          {currentRole === 'learner' && activeTab === 'leaderboard' && (
+            <LeaderboardView />
+          )}
+
+          {/* Job Marketplace & Application Pipeline Tracker */}
+          {(activeTab === 'jobs' || activeTab === 'marketplace') && (
+            <JobMarketplaceView />
+          )}
+
+          {/* Dedicated Employer & Recruiter Portal */}
+          {(currentRole === 'employer' || activeTab === 'employer') && activeTab !== 'settings' && (
+            <EmployerPortal />
           )}
 
           {/* Institution Portal */}

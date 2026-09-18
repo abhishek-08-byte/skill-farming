@@ -48,7 +48,8 @@ export const GovernmentPortal = () => {
     setActiveTab,
     learnerProfilesRegistry,
     exportRegistryToCSV,
-    setLearnerProfilesRegistry
+    setLearnerProfilesRegistry,
+    t
   } = useApp();
 
   // Dual Dashboard Mode: 'government' | 'private'
@@ -104,28 +105,28 @@ export const GovernmentPortal = () => {
     {
       id: 'app-1',
       candidateName: 'Priya Sharma',
-      district: 'Bengaluru Urban',
+      district: 'Mumbai Suburban',
       skill: 'Database Systems & SQL',
       appliedRole: 'Junior Database Administrator',
-      employer: 'State e-Governance Mission',
+      employer: 'Maharashtra State e-Governance Mission',
       timeAgo: 'Just now'
     },
     {
       id: 'app-2',
       candidateName: 'Kavita Nair',
-      district: 'Hassan',
+      district: 'Pune',
       skill: 'Cloud DevOps & Linux',
       appliedRole: 'Cloud Support Trainee',
-      employer: 'Karnataka Digital Economy Mission',
+      employer: 'Maharashtra State Innovation Society (MSINS)',
       timeAgo: '6 mins ago'
     },
     {
       id: 'app-3',
       candidateName: 'Deepak Joshi',
-      district: 'Mysuru',
+      district: 'Nagpur',
       skill: 'Python Backend APIs',
       appliedRole: 'Backend Developer Trainee',
-      employer: 'Apex Tech Enterprises',
+      employer: 'Apex Tech Enterprises (MIDC Nagpur)',
       timeAgo: '12 mins ago'
     }
   ]);
@@ -135,8 +136,8 @@ export const GovernmentPortal = () => {
     {
       id: 'unemp-1',
       name: 'Rohan Sharma',
-      district: 'Bengaluru Urban',
-      education: 'B.Tech Computer Science (2025)',
+      district: 'Pune',
+      education: 'B.Tech Computer Engineering (2025)',
       targetIndustry: 'IT & Software Engineering',
       certifiedSkill: 'Database Systems & SQL',
       score: 90,
@@ -146,7 +147,7 @@ export const GovernmentPortal = () => {
     {
       id: 'unemp-2',
       name: 'Ananya Verma',
-      district: 'Hassan',
+      district: 'Nashik',
       education: 'BCA in Computer Applications (2025)',
       targetIndustry: 'FinTech & Banking',
       certifiedSkill: 'Python Backend APIs',
@@ -157,7 +158,7 @@ export const GovernmentPortal = () => {
     {
       id: 'unemp-3',
       name: 'Vikram Patel',
-      district: 'Mysuru',
+      district: 'Chhatrapati Sambhajinagar',
       education: 'Diploma in Electrical & Computer Eng (2024)',
       targetIndustry: 'Renewable Energy & EV Tech',
       certifiedSkill: 'Industrial Automation & PLC',
@@ -168,7 +169,7 @@ export const GovernmentPortal = () => {
     {
       id: 'unemp-4',
       name: 'Sneha Kulkarni',
-      district: 'Belagavi',
+      district: 'Thane',
       education: 'B.Sc Information Science (2025)',
       targetIndustry: 'IT & Software Engineering',
       certifiedSkill: 'Database Systems & SQL',
@@ -179,7 +180,7 @@ export const GovernmentPortal = () => {
     {
       id: 'unemp-5',
       name: 'Manoj Hegde',
-      district: 'Dharwad',
+      district: 'Nagpur',
       education: 'B.E. Electronics (2024)',
       targetIndustry: 'Advanced Manufacturing & Robotics',
       certifiedSkill: 'Cloud DevOps & Linux',
@@ -190,7 +191,7 @@ export const GovernmentPortal = () => {
     {
       id: 'unemp-6',
       name: 'Pooja Reddy',
-      district: 'Hassan',
+      district: 'Kolhapur',
       education: 'B.Tech IT (2025)',
       targetIndustry: 'Healthcare & Biotechnology',
       certifiedSkill: 'Python Backend APIs',
@@ -203,8 +204,8 @@ export const GovernmentPortal = () => {
   // Periodic Job Application Notification Simulator
   useEffect(() => {
     const timer = setInterval(() => {
-      const candidates = ['Arun Kumar', 'Meera Rao', 'Siddharth Patil', 'Bhavana Gowda'];
-      const districtsList = ['Bengaluru Urban', 'Hassan', 'Mysuru', 'Belagavi'];
+      const candidates = ['Arun Patil', 'Meera Deshmukh', 'Siddharth Joshi', 'Bhavana Shinde'];
+      const districtsList = ['Pune', 'Mumbai Suburban', 'Nagpur', 'Nashik', 'Chhatrapati Sambhajinagar', 'Thane', 'Kolhapur', 'Solapur'];
       const skillsList = ['Database Systems & SQL', 'Python Backend APIs', 'Cloud DevOps & Linux'];
       const roles = ['Junior Systems Associate', 'Technical Data Assistant', 'Network Support Trainee'];
 
@@ -219,7 +220,7 @@ export const GovernmentPortal = () => {
         district: randomDist,
         skill: randomSkill,
         appliedRole: randomRole,
-        employer: 'State Technical Mission',
+        employer: 'Government of Maharashtra Technical Mission',
         timeAgo: 'Just now'
       };
 
@@ -232,20 +233,20 @@ export const GovernmentPortal = () => {
   const handleSimulateNewApplication = () => {
     const newApp = {
       id: `app-${Date.now()}`,
-      candidateName: 'Sunil Basavaraj',
-      district: 'Hassan',
+      candidateName: 'Sunil Shinde',
+      district: 'Pune',
       skill: 'Database Systems & SQL',
       appliedRole: 'Junior Systems Officer',
-      employer: 'State e-Governance Cell',
+      employer: 'Maharashtra State e-Governance Cell',
       timeAgo: 'Just now'
     };
     setJobApplications(prev => [newApp, ...prev.slice(0, 7)]);
-    setStatusToast('🔔 New job application received from Hassan district!');
+    setStatusToast('🔔 New job application received from Pune district (Maharashtra)!');
     setTimeout(() => setStatusToast(''), 4000);
   };
 
   // Private Interview dispatch form state
-  const [interviewEmployer, setInterviewEmployer] = useState('Tata Consultancy Services (TCS) - Digital Systems');
+  const [interviewEmployer, setInterviewEmployer] = useState('Tata Consultancy Services (TCS) - Pune Innovation Hub');
   const [interviewRole, setInterviewRole] = useState('Junior Database Systems Associate');
   const [interviewDate, setInterviewDate] = useState('2026-09-22');
   const [interviewMode, setInterviewMode] = useState('Virtual Technical Round (MS Teams / Meet)');
@@ -255,7 +256,7 @@ export const GovernmentPortal = () => {
   const [examName, setExamName] = useState('National Industry Technical Qualifier Examination (NITQE-2026)');
   const [examDate, setExamDate] = useState('2026-09-28');
   const [examReportingTime, setExamReportingTime] = useState('09:00 AM IST');
-  const [examCenter, setExamCenter] = useState('TCS iON Digital Zone iDZ, Electronic City Phase 1, Bengaluru');
+  const [examCenter, setExamCenter] = useState('TCS iON Digital Zone iDZ, Hinjawadi Phase 1, Pune, Maharashtra');
 
   // Backend Excel Registry Search & Filter States
   const [registrySearch, setRegistrySearch] = useState('');
@@ -392,93 +393,43 @@ export const GovernmentPortal = () => {
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 md:pb-6 animate-in fade-in duration-200">
-      {/* DUAL DASHBOARD MODE SWITCHER (Government vs Private Dashboard) */}
-      <div className="bg-white p-2.5 rounded-3xl border border-slate-200 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-2 p-1 bg-slate-100/80 rounded-2xl">
-          <button
-            type="button"
-            onClick={() => {
-              setPortalMode('government');
-              if (analyticsView === 'private-sourcing') setAnalyticsView('tracking');
-            }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all ${
-              portalMode === 'government'
-                ? 'bg-[#0F4C47] text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-          >
-            <Shield className="w-4 h-4" />
-            <span>🏛️ Government Oversight & Tracking Dashboard</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => {
-              setPortalMode('private');
-              setAnalyticsView('private-sourcing');
-            }}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-black transition-all ${
-              portalMode === 'private'
-                ? 'bg-[#10554F] text-white shadow-md'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/50'
-            }`}
-          >
-            <Building className="w-4 h-4" />
-            <span>🏢 Private Industry & Testing Board Dashboard</span>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 font-black shadow-xs">
-              Issue Cards & Interviews
-            </span>
-          </button>
-        </div>
-
-        <div className="text-xs text-slate-600 font-bold px-3 flex items-center gap-2 self-center">
-          <span className={`w-2.5 h-2.5 rounded-full ${portalMode === 'government' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
-          <span>
-            {portalMode === 'government'
-              ? 'Mode: Government Read-Only Applicant Tracking'
-              : 'Mode: Private Corporate Testing & Interview Engine'}
-          </span>
-        </div>
-      </div>
-
-      {/* Header Banner */}
-      <div className="farming-card p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-700">
-            {portalMode === 'government' ? <Shield className="w-4 h-4" /> : <Building className="w-4 h-4" />}
-            <span>
-              {portalMode === 'government'
-                ? 'State Government Workforce Surveillance & Audit Matrix'
-                : 'Private Industry Corporate Testing Board & Recruitment Engine'}
-            </span>
+      
+      {/* Official Maharashtra State Directorate Statistical & Policy Oversight Header */}
+      <div className="bg-gradient-to-r from-teal-900 via-slate-900 to-teal-950 text-white p-6 rounded-3xl shadow-lg border border-teal-800/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center space-x-4">
+          <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur flex items-center justify-center border border-white/20 shrink-0">
+            <Shield className="w-7 h-7 text-teal-300" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 mt-1">
-            {portalMode === 'government'
-              ? 'Government Skill-to-Employment Decision Support System'
-              : 'Private Industry Corporate Interview & Examination Card Portal'}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            {portalMode === 'government'
-              ? 'Real-time candidate tracking, district outcomes, and longitudinal compliance auditing. Private testing boards manage interviews and exam cards.'
-              : 'Authorized private testing boards (TCS iON, NITA) and employers evaluate learners, schedule technical interviews, and issue official exam admit cards.'}
-          </p>
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-teal-500/20 text-teal-300 border border-teal-400/30 uppercase tracking-wider">
+                {t('maharashtra_gov', 'Government of Maharashtra')} • MSSDS & Mahaswayam
+              </span>
+              <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                {t('govt_badge_stat', 'STRICTLY STATISTICAL & POLICY ANALYTICS ONLY')}
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
+              {t('govt_title', 'Government of Maharashtra Skilling Intelligence')}
+            </h1>
+            <p className="text-xs text-slate-300 mt-0.5">
+              {t('govt_subtitle', 'Read-only aggregate analytics, district drilldowns, wage mobility, training relevance, and labor market demand-supply indices across Maharashtra.')}
+            </p>
+          </div>
         </div>
 
-        {/* Live Notification Indicator */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 shrink-0">
           <button
-            type="button"
-            onClick={handleSimulateNewApplication}
-            className="px-3.5 py-2 rounded-xl bg-teal-50 hover:bg-teal-100 border border-teal-200 text-[#0F4C47] text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs"
-            title="Simulate a new candidate job application"
+            onClick={() => exportRegistryToCSV(learnersDb, 'Maharashtra_Government_Analytical_Report.csv')}
+            className="px-4 py-2.5 rounded-xl bg-white text-slate-900 hover:bg-slate-100 text-xs font-bold transition-all shadow-sm flex items-center space-x-2"
           >
-            <Bell className="w-3.5 h-3.5 text-teal-700" />
-            <span>Simulate New Application</span>
+            <Download className="w-4 h-4 text-teal-700" />
+            <span>{t('export_analytics_csv', 'Export District Analytics CSV')}</span>
           </button>
         </div>
       </div>
 
-      {/* GOVERNMENT / PRIVATE PROFILE COMPLETION CALLOUT */}
+      {/* GOVERNMENT PROFILE COMPLETION CALLOUT */}
       <ProfileCompletionCard role="government" />
 
       {/* Toast Notification */}
@@ -494,139 +445,37 @@ export const GovernmentPortal = () => {
         </div>
       )}
 
-      {/* OFFICIAL GOVERNMENT REGULATORY POLICY NOTICE (Strict Role Separation Rule) */}
-      {portalMode === 'government' ? (
-        <div className="p-4 rounded-2xl bg-teal-50/90 border border-teal-200 text-teal-950 text-xs shadow-xs flex items-start gap-3">
-          <div className="w-7 h-7 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-            <Lock className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold uppercase tracking-wider text-[10px] bg-teal-200/80 text-teal-900 px-2 py-0.5 rounded-md">
-                Official Regulatory Policy Notice
-              </span>
-              <span className="text-[11px] text-teal-800 font-bold">
-                State Workforce Surveillance Mandate
-              </span>
-            </div>
-            <p className="mt-1 leading-relaxed text-teal-900/90 font-medium">
-              Under state employment governance rules, <strong>examination admit cards and corporate interviews can only be generated and dispatched from the Private Industry Dashboard</strong> by accredited corporate testing boards (TCS iON, NITA, etc.). The <strong>Government Dashboard tracks and audits those applicants</strong> without issuing cards or scheduling interviews directly.
-            </p>
-          </div>
-        </div>
-      ) : (
-        <div className="p-4 rounded-2xl bg-amber-50/90 border border-amber-200 text-amber-950 text-xs shadow-xs flex items-start gap-3">
-          <div className="w-7 h-7 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 mt-0.5 shadow-xs">
-            <Building2 className="w-4 h-4" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold uppercase tracking-wider text-[10px] bg-amber-200 text-amber-900 px-2 py-0.5 rounded-md">
-                Private Industry Testing Authority
-              </span>
-              <span className="text-[11px] text-amber-900 font-bold">
-                Official Exam Card & Interview Dispatcher Active
-              </span>
-            </div>
-            <p className="mt-1 leading-relaxed text-amber-900 font-medium">
-              As an accredited private testing authority or corporate employer, you have full authority to <strong>Schedule Corporate Interviews</strong> and <strong>Generate & Issue Official Examination Admit Cards / Hall Tickets</strong> for verified candidates. All dispatched records synchronize in real time to the Central Database and Government Oversight portal.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Real-time Job Applications Ticker / Alert Banner */}
-      <div className="p-3.5 rounded-2xl bg-gradient-to-r from-teal-900 via-[#0F4C47] to-teal-800 text-white shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center shrink-0">
-            <Bell className="w-4 h-4 text-teal-200 animate-pulse" />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="font-extrabold uppercase tracking-wider text-[10px] text-teal-300 bg-black/30 px-2 py-0.5 rounded-md">
-                Live Applicant Feed
-              </span>
-              <span className="text-[11px] text-teal-100 font-semibold">
-                Updated every 10–15 mins • {jobApplications.length} Recent Applications
-              </span>
-            </div>
-            <p className="font-medium text-white/90 text-xs mt-0.5">
-              Latest: <span className="font-bold">{jobApplications[0]?.candidateName}</span> ({jobApplications[0]?.district}) applied for <span className="underline">{jobApplications[0]?.appliedRole}</span> • Certified in {jobApplications[0]?.skill} ({jobApplications[0]?.timeAgo})
-            </p>
-          </div>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => {
-            if (portalMode === 'private') {
-              setAnalyticsView('private-sourcing');
-            } else {
-              setAnalyticsView('tracking');
-            }
-          }}
-          className="px-3.5 py-1.5 rounded-xl bg-white text-[#0F4C47] hover:bg-teal-50 text-xs font-black transition-all shrink-0 self-start sm:self-auto shadow-sm"
-        >
-          {portalMode === 'private' ? 'Open Private Recruitment Portal →' : 'View Applicant Tracking Matrix →'}
-        </button>
-      </div>
-
       {/* Analytics Sub-Nav Pills */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs font-bold">
-        {portalMode === 'government' ? (
-          [
-            { id: 'overview', label: 'Program Overview' },
-            { id: 'tracking', label: 'Applicant Tracking & Audit Matrix (Govt Tracking)' },
-            { id: 'registry', label: 'Master Profiles Excel Registry (Backend)' },
-            { id: 'drilldown', label: 'District Drilldown (Clickable)' },
-            { id: 'cohorts', label: 'Cohort Trends (Clickable)' },
-            { id: 'providers', label: 'Provider Performance' },
-            { id: 'demographics', label: 'Demographic Parity' },
-            { id: 'insights', label: 'Evidence-Based Insights' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setAnalyticsView(tab.id);
-                if (tab.id === 'drilldown') setActiveTab('government-drilldown');
-                else if (tab.id === 'cohorts') setActiveTab('government-cohorts');
-                else if (tab.id === 'tracking') setActiveTab('government-tracking');
-                else if (tab.id === 'registry') setActiveTab('government-registry');
-                else setActiveTab('government');
-              }}
-              className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${
-                analyticsView === tab.id
-                  ? 'bg-[#0F4C47] text-white shadow-sm font-extrabold'
-                  : 'bg-white border border-[#E5EFEA] text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))
-        ) : (
-          [
-            { id: 'private-sourcing', label: 'Corporate Recruitment & Exam Card Dispatch (Private Dashboard)' },
-            { id: 'registry', label: 'Master Profiles Excel Registry (Backend)' },
-            { id: 'tracking', label: 'Application Status Audit' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setAnalyticsView(tab.id);
-                if (tab.id === 'private-sourcing') setActiveTab('government-private');
-                else if (tab.id === 'registry') setActiveTab('government-registry');
-                else if (tab.id === 'tracking') setActiveTab('government-tracking');
-              }}
-              className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${
-                analyticsView === tab.id
-                  ? 'bg-[#10554F] text-white shadow-sm font-extrabold'
-                  : 'bg-white border border-[#E5EFEA] text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))
-        )}
+        {[
+          { id: 'overview', label: 'Program Overview & Macro KPIs' },
+          { id: 'tracking', label: 'Candidate Progress & Retention Audit' },
+          { id: 'registry', label: 'Master Profiles Registry (Analytical Export)' },
+          { id: 'drilldown', label: 'District Drilldown (Clickable Regions)' },
+          { id: 'cohorts', label: 'Cohort Trends & Longitudinal Retention' },
+          { id: 'providers', label: 'Institution Performance & Audits' },
+          { id: 'demographics', label: 'Demographic Parity & Inclusion' },
+          { id: 'insights', label: 'Evidence-Based Policy Insights' }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setAnalyticsView(tab.id);
+              if (tab.id === 'drilldown') setActiveTab('government-drilldown');
+              else if (tab.id === 'cohorts') setActiveTab('government-cohorts');
+              else if (tab.id === 'tracking') setActiveTab('government-tracking');
+              else if (tab.id === 'registry') setActiveTab('government-registry');
+              else setActiveTab('government');
+            }}
+            className={`px-4 py-2.5 rounded-xl whitespace-nowrap transition-all ${
+              analyticsView === tab.id
+                ? 'bg-[#0F4C47] text-white shadow-sm font-extrabold'
+                : 'bg-white border border-[#E5EFEA] text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
 
       {/* ======================================================== */}
@@ -637,25 +486,25 @@ export const GovernmentPortal = () => {
           {/* KPI Normalized Cards */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
             <div className="farming-card p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase">Total Enrolled</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">{t('kpi_enrolled', 'Total Enrolled')}</div>
               <div className="text-lg font-black text-slate-900 mt-0.5">{totalEnrolled.toLocaleString()}</div>
-              <div className="text-[11px] text-slate-500 mt-1">Across 6 districts</div>
+              <div className="text-[11px] text-slate-500 mt-1">Maharashtra Districts</div>
             </div>
 
             <div className="farming-card p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase">Certified Passed</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">{t('kpi_certified', 'Certified Passed')}</div>
               <div className="text-lg font-black text-[#0F4C47] mt-0.5">{totalCompleted.toLocaleString()}</div>
               <div className="text-[11px] text-emerald-600 font-bold mt-1">86% Completion</div>
             </div>
 
             <div className="farming-card p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase">Employed / Placed</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">{t('kpi_employed', 'Employed / Placed')}</div>
               <div className="text-lg font-black text-teal-700 mt-0.5">{totalEmployed.toLocaleString()}</div>
               <div className="text-[11px] text-teal-800 font-bold mt-1">81% Conversion</div>
             </div>
 
             <div className="farming-card p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase">6M Retention</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">{t('kpi_retention', '6M Retention')}</div>
               <div className="text-lg font-black text-emerald-700 mt-0.5">78%</div>
               <div className="text-[11px] text-slate-500 mt-1">Verified sustained job</div>
             </div>
@@ -663,13 +512,13 @@ export const GovernmentPortal = () => {
             <div className="farming-card p-4">
               <div className="text-[10px] font-bold text-slate-400 uppercase">Active Districts</div>
               <div className="text-lg font-black text-slate-900 mt-0.5">{districts.length}</div>
-              <div className="text-[11px] text-teal-700 font-bold mt-1">100% On-Track</div>
+              <div className="text-[11px] text-teal-700 font-bold mt-1">Maharashtra Hubs</div>
             </div>
 
             <div className="farming-card p-4">
-              <div className="text-[10px] font-bold text-slate-400 uppercase">Wage Range</div>
+              <div className="text-[10px] font-bold text-slate-400 uppercase">{t('kpi_avg_wage', 'Wage Range')}</div>
               <div className="text-lg font-black text-slate-900 mt-0.5">₹4.8–7.5L</div>
-              <div className="text-[11px] text-slate-500 mt-1">State avg baseline</div>
+              <div className="text-[11px] text-slate-500 mt-1">Maharashtra Baseline</div>
             </div>
           </div>
 
@@ -678,14 +527,14 @@ export const GovernmentPortal = () => {
             <div className="flex items-center justify-between mb-3">
               <div>
                 <h3 className="font-bold text-base text-slate-900">
-                  District Outcome Matrix (Click any District to Drill Down)
+                  {t('district_performance_title', 'Maharashtra District-wise Skill & Employment Performance')}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Select a district row to open deep-dive metrics, regional centers, and localized employer demand.
+                  Select any Maharashtra district row below to open deep-dive analytics, training centers, and industrial placements.
                 </p>
               </div>
               <span className="text-xs text-teal-800 font-bold bg-[#E2F1ED] px-3 py-1 rounded-xl">
-                Clickable Rows
+                Maharashtra • 36 Districts
               </span>
             </div>
 
@@ -693,7 +542,7 @@ export const GovernmentPortal = () => {
               <table className="w-full text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px]">
-                    <th className="py-2.5 font-bold">District / State</th>
+                    <th className="py-2.5 font-bold">District (Maharashtra) / Division</th>
                     <th className="py-2.5 font-bold">Enrolled</th>
                     <th className="py-2.5 font-bold">Completed</th>
                     <th className="py-2.5 font-bold">Completion %</th>
@@ -991,154 +840,7 @@ export const GovernmentPortal = () => {
         </div>
       )}
 
-      {/* ======================================================== */}
-      {/* VIEW: PRIVATE INDUSTRY RECRUITMENT & EXAM CARD DISPATCH  */}
-      {/* (EXCLUSIVE TO PRIVATE DASHBOARD MODE)                    */}
-      {/* ======================================================== */}
-      {analyticsView === 'private-sourcing' && (
-        <div className="space-y-5">
-          <div className="farming-card p-6 border-2 border-teal-600/30">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
-              <div>
-                <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 uppercase tracking-wider">
-                  🏢 Private Industry Testing Authority & Hiring
-                </span>
-                <h3 className="text-lg font-black text-slate-900 mt-1">
-                  Private Corporate Interview Scheduling & Exam Admit Card Generator
-                </h3>
-                <p className="text-xs text-slate-500 mt-0.5">
-                  Screen qualified talent from central registry. Private employers & accredited testing boards can schedule corporate interviews or generate and issue official examination admit cards.
-                </p>
-              </div>
 
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-bold text-teal-800 bg-teal-50 px-3 py-1.5 rounded-xl border border-teal-200">
-                  {filteredCandidates.length} Candidates Available
-                </span>
-              </div>
-            </div>
-
-            {/* Filter controls */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
-              <div className="relative">
-                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                <input
-                  type="text"
-                  placeholder="Search candidate name, degree, skill..."
-                  value={talentSearch}
-                  onChange={(e) => setTalentSearch(e.target.value)}
-                  className="w-full pl-9 pr-3 py-2 rounded-xl border border-slate-200 text-xs font-medium focus:border-[#0F4C47] outline-none"
-                />
-              </div>
-
-              <div>
-                <select
-                  value={talentSkillFilter}
-                  onChange={(e) => setTalentSkillFilter(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-[#0F4C47] outline-none bg-white"
-                >
-                  <option value="All">All Certified Skills</option>
-                  <option value="Database Systems & SQL">Database Systems & SQL</option>
-                  <option value="Python Backend APIs">Python Backend APIs</option>
-                  <option value="Cloud DevOps & Linux">Cloud DevOps & Linux</option>
-                  <option value="Industrial Automation & PLC">Industrial Automation & PLC</option>
-                </select>
-              </div>
-
-              <div>
-                <select
-                  value={talentDistrictFilter}
-                  onChange={(e) => setTalentDistrictFilter(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold focus:border-[#0F4C47] outline-none bg-white"
-                >
-                  <option value="All">All Districts / Cities</option>
-                  <option value="Bengaluru Urban">Bengaluru Urban</option>
-                  <option value="Hassan">Hassan</option>
-                  <option value="Mysuru">Mysuru</option>
-                  <option value="Belagavi">Belagavi</option>
-                  <option value="Dharwad">Dharwad</option>
-                  <option value="Pune">Pune</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Candidate Cards Grid with Private Action Buttons */}
-            <div className="mt-5 grid grid-cols-1 md:grid-cols-2 gap-4">
-              {filteredCandidates.map((cand) => (
-                <div
-                  key={cand.id}
-                  className="p-5 rounded-2xl border border-slate-200 bg-white hover:border-teal-500 transition-all shadow-xs flex flex-col justify-between"
-                >
-                  <div>
-                    <div className="flex items-start justify-between gap-2">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h4 className="font-extrabold text-sm text-slate-900">{cand.name}</h4>
-                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-teal-50 text-[#0F4C47]">
-                            Score: {cand.score}%
-                          </span>
-                        </div>
-                        <div className="text-[11px] text-slate-500 mt-0.5 flex items-center gap-1.5">
-                          <MapPin className="w-3 h-3 text-teal-700" />
-                          <span>{cand.district}</span>
-                          <span>•</span>
-                          <span>{cand.education}</span>
-                        </div>
-                      </div>
-
-                      <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full whitespace-nowrap ${
-                        cand.status.includes('Scheduled') || cand.status.includes('Exam Card')
-                          ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          : 'bg-amber-100 text-amber-800 border border-amber-200'
-                      }`}>
-                        {cand.status}
-                      </span>
-                    </div>
-
-                    <div className="mt-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-[10px] font-bold text-slate-400 uppercase">
-                          Verified Skill Learned on Portal:
-                        </span>
-                        <span className="text-[10px] font-bold text-emerald-700">✓ Assessment Pass</span>
-                      </div>
-                      <div className="font-extrabold text-[#0F4C47] text-xs">
-                        {cand.certifiedSkill}
-                      </div>
-                      <div className="text-[11px] text-slate-500 mt-0.5">
-                        Target Industry: <span className="font-semibold text-slate-700">{cand.targetIndustry}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Dual Action Buttons EXCLUSIVE TO PRIVATE DASHBOARD */}
-                  <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCandidateForInterview(cand)}
-                      className="px-3.5 py-2 rounded-xl bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 hover:scale-[1.02]"
-                      title="Schedule a corporate technical interview with an accredited employer"
-                    >
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>Schedule Corporate Interview</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setSelectedCandidateForExam(cand)}
-                      className="px-3.5 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 hover:scale-[1.02]"
-                      title="Generate official examination admit card from private testing board"
-                    >
-                      <Award className="w-3.5 h-3.5 text-amber-300" />
-                      <span>Generate & Issue Exam Card</span>
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* ======================================================== */}
       {/* VIEW: GOVERNMENT APPLICANT TRACKING & AUDIT MATRIX       */}

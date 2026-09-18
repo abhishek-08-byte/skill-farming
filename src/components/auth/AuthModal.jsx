@@ -18,7 +18,10 @@ import {
   Check,
   Globe,
   MapPin,
-  GraduationCap
+  GraduationCap,
+  Camera,
+  Upload,
+  Image as ImageIcon
 } from 'lucide-react';
 
 const AVAILABLE_LANGUAGES = [
@@ -60,13 +63,17 @@ export const AuthModal = ({
     email: '',
     password: '',
     confirmPassword: '',
+    avatar: '',
     orgName: '',
     department: '',
     country: 'India',
     stateName: 'Karnataka',
     cityName: 'Bengaluru',
-    educationDegree: 'B.Tech / B.E. Computer Science',
-    careerGoal: 'Full Stack Engineer',
+    educationDegree: '',
+    careerGoal: 'Software Developer',
+    targetRole: 'Software Developer',
+    customTargetRole: '',
+    isCustomRole: false,
     targetIndustry: 'IT & Software Engineering',
     preferredLanguages: ['English', 'Hindi'],
     termsAccepted: true
@@ -93,6 +100,7 @@ export const AuthModal = ({
       setOtpMessage('');
       if (initialRole === 'learner') setFormData(prev => ({ ...prev, email: 'rohan.sharma@skillfarming.org' }));
       else if (initialRole === 'institution') setFormData(prev => ({ ...prev, email: 'director@apextech.org' }));
+      else if (initialRole === 'employer') setFormData(prev => ({ ...prev, email: 'talent@infracloud.io' }));
       else if (initialRole === 'government') setFormData(prev => ({ ...prev, email: 'governance@skillmission.gov.in' }));
     }
   }, [isOpen, initialTab, initialRole]);
@@ -118,6 +126,7 @@ export const AuthModal = ({
     if (tab === 'login') {
       if (role === 'learner') setFormData(prev => ({ ...prev, email: 'rohan.sharma@skillfarming.org' }));
       else if (role === 'institution') setFormData(prev => ({ ...prev, email: 'director@apextech.org' }));
+      else if (role === 'employer') setFormData(prev => ({ ...prev, email: 'talent@infracloud.io' }));
       else if (role === 'government') setFormData(prev => ({ ...prev, email: 'governance@skillmission.gov.in' }));
     }
   };
@@ -204,16 +213,23 @@ export const AuthModal = ({
             return;
           }
 
+          const finalRole = (formData.targetRole === 'Others' || formData.targetRole === 'Other' || formData.isCustomRole)
+            ? (formData.customTargetRole?.trim() || 'Custom Specialist')
+            : (formData.targetRole || formData.careerGoal || 'Software Developer');
+
           signupUser({
             role: selectedRole,
             fullName: formData.name,
             email: formData.email,
+            avatar: formData.avatar,
             orgName: formData.orgName,
             department: formData.department,
             country: formData.country,
             stateName: formData.stateName,
             cityName: formData.cityName,
-            careerGoal: formData.careerGoal,
+            careerGoal: finalRole,
+            targetRole: finalRole,
+            customTargetRole: (formData.targetRole === 'Others' || formData.targetRole === 'Other' || formData.isCustomRole) ? formData.customTargetRole : '',
             targetIndustry: formData.targetIndustry,
             preferredLanguages: formData.preferredLanguages,
             educationDegree: formData.educationDegree
@@ -242,6 +258,12 @@ export const AuthModal = ({
         role: 'institution',
         email: 'director@apextech.org',
         name: 'Apex Academy Admin'
+      });
+    } else if (role === 'employer') {
+      loginUser({
+        role: 'employer',
+        email: 'talent@infracloud.io',
+        name: 'Anand Kulkarni (InfraCloud)'
       });
     } else if (role === 'government') {
       loginUser({
@@ -322,17 +344,17 @@ export const AuthModal = ({
             <label className="block text-[11px] font-black text-slate-500 uppercase tracking-wider mb-2">
               Select Your Access Portal:
             </label>
-            <div className="grid grid-cols-3 gap-2 sm:gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
               <button
                 type="button"
                 onClick={() => handleRoleChange('learner')}
-                className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center gap-1 ${
                   selectedRole === 'learner'
                     ? 'border-[#0F4C47] bg-[#E2F1ED]/50 text-[#0F4C47] shadow-sm font-bold ring-2 ring-[#0F4C47]/20'
                     : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white font-medium'
                 }`}
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                   selectedRole === 'learner' ? 'bg-[#0F4C47] text-white shadow-xs' : 'bg-slate-100 text-slate-500'
                 }`}>
                   <User className="w-4 h-4" />
@@ -344,13 +366,13 @@ export const AuthModal = ({
               <button
                 type="button"
                 onClick={() => handleRoleChange('institution')}
-                className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center gap-1 ${
                   selectedRole === 'institution'
                     ? 'border-[#0F4C47] bg-[#E2F1ED]/50 text-[#0F4C47] shadow-sm font-bold ring-2 ring-[#0F4C47]/20'
                     : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white font-medium'
                 }`}
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                   selectedRole === 'institution' ? 'bg-[#0F4C47] text-white shadow-xs' : 'bg-slate-100 text-slate-500'
                 }`}>
                   <Building className="w-4 h-4" />
@@ -361,20 +383,38 @@ export const AuthModal = ({
 
               <button
                 type="button"
+                onClick={() => handleRoleChange('employer')}
+                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center gap-1 ${
+                  selectedRole === 'employer'
+                    ? 'border-[#0F4C47] bg-[#E2F1ED]/50 text-[#0F4C47] shadow-sm font-bold ring-2 ring-[#0F4C47]/20'
+                    : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white font-medium'
+                }`}
+              >
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
+                  selectedRole === 'employer' ? 'bg-[#0F4C47] text-white shadow-xs' : 'bg-slate-100 text-slate-500'
+                }`}>
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                <span className="text-xs font-bold">Employer</span>
+                <span className="text-[10px] text-slate-400 font-normal">Recruiter / HR</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => handleRoleChange('government')}
-                className={`p-3 rounded-2xl border text-center transition-all flex flex-col items-center gap-1.5 ${
+                className={`p-2.5 rounded-2xl border text-center transition-all flex flex-col items-center gap-1 ${
                   selectedRole === 'government'
                     ? 'border-[#0F4C47] bg-[#E2F1ED]/50 text-[#0F4C47] shadow-sm font-bold ring-2 ring-[#0F4C47]/20'
                     : 'border-slate-200 hover:border-slate-300 text-slate-600 bg-white font-medium'
                 }`}
               >
-                <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${
+                <div className={`w-8 h-8 rounded-xl flex items-center justify-center ${
                   selectedRole === 'government' ? 'bg-[#0F4C47] text-white shadow-xs' : 'bg-slate-100 text-slate-500'
                 }`}>
                   <Shield className="w-4 h-4" />
                 </div>
                 <span className="text-xs font-bold">Government</span>
-                <span className="text-[10px] text-slate-400 font-normal">State Mission</span>
+                <span className="text-[10px] text-slate-400 font-normal">State Analytics</span>
               </button>
             </div>
           </div>
@@ -448,34 +488,80 @@ export const AuthModal = ({
               </div>
             )}
 
-            {/* Learner Specific Fields: Target Industry, Education Location (Country, State, City), Languages */}
+            {/* Learner Specific Fields: Profile Image Upload, Location First, Target Role with Others option */}
             {tab === 'register' && selectedRole === 'learner' && (
               <div className="space-y-3.5 pt-1">
-                {/* Target Industry */}
-                <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
-                    <span>Target Industry</span>
-                    <span className="text-[10px] text-teal-700 font-semibold">Career Pathway</span>
-                  </label>
-                  <div className="relative">
-                    <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-                    <select
-                      value={formData.targetIndustry}
-                      onChange={(e) => setFormData({ ...formData, targetIndustry: e.target.value })}
-                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:border-[#0F4C47] outline-none bg-white appearance-none cursor-pointer"
+                {/* 1. Device Image / Photo Upload */}
+                <div className="p-3.5 rounded-2xl bg-teal-50/60 border border-teal-200/80 flex items-center gap-3.5">
+                  <div className="relative group shrink-0">
+                    <img
+                      src={formData.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80'}
+                      alt="Profile Avatar"
+                      className="w-14 h-14 rounded-2xl object-cover border-2 border-[#0F4C47] shadow-xs bg-white"
+                    />
+                    <label
+                      htmlFor="learner-avatar-upload"
+                      className="absolute inset-0 bg-black/60 rounded-2xl flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity text-white text-[9px] font-bold"
                     >
-                      {TARGET_INDUSTRIES.map((ind) => (
-                        <option key={ind} value={ind}>{ind}</option>
-                      ))}
-                    </select>
+                      <Camera className="w-4 h-4 mb-0.5" />
+                      <span>Change</span>
+                    </label>
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-bold text-slate-800 block">
+                        Profile Photo <span className="text-[10px] text-teal-700 font-medium">(From Device)</span>
+                      </label>
+                      {formData.avatar && (
+                        <button
+                          type="button"
+                          onClick={() => setFormData({ ...formData, avatar: '' })}
+                          className="text-[10px] text-rose-600 hover:underline font-semibold"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-slate-500 mb-2">
+                      Upload your image directly from your computer or mobile device.
+                    </p>
+                    <label
+                      htmlFor="learner-avatar-upload"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold cursor-pointer transition-all shadow-xs"
+                    >
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{formData.avatar ? 'Change Photo from Device' : 'Upload Image from Device'}</span>
+                    </label>
+                    <input
+                      id="learner-avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const reader = new FileReader();
+                          reader.onload = (uploadEvt) => {
+                            setFormData({ ...formData, avatar: uploadEvt.target.result });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }}
+                    />
                   </div>
                 </div>
 
-                {/* Educational Background & Location: Country, State, City */}
-                <div className="p-3.5 bg-slate-50/80 rounded-2xl border border-slate-200/80 space-y-2.5">
-                  <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
-                    <GraduationCap className="w-4 h-4 text-[#0F4C47]" />
-                    <span>Educational Background & Location</span>
+                {/* 2. Where do you stay? (Current Residence & Location Asked First) */}
+                <div className="p-3.5 bg-slate-50/90 rounded-2xl border border-slate-200/90 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs font-bold text-slate-800">
+                      <MapPin className="w-4 h-4 text-[#0F4C47]" />
+                      <span>Where do you stay? (Current Location)</span>
+                    </div>
+                    <span className="text-[10px] text-teal-700 font-semibold bg-teal-50 px-2 py-0.5 rounded border border-teal-200">
+                      Step 1 of Background
+                    </span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -486,7 +572,7 @@ export const AuthModal = ({
                         value={formData.country}
                         onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:border-[#0F4C47] outline-none bg-white"
-                        placeholder="Country"
+                        placeholder="Country (e.g. India)"
                       />
                     </div>
                     <div>
@@ -496,7 +582,7 @@ export const AuthModal = ({
                         value={formData.stateName}
                         onChange={(e) => setFormData({ ...formData, stateName: e.target.value })}
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:border-[#0F4C47] outline-none bg-white"
-                        placeholder="State"
+                        placeholder="State (e.g. Karnataka)"
                       />
                     </div>
                     <div>
@@ -506,10 +592,79 @@ export const AuthModal = ({
                         value={formData.cityName}
                         onChange={(e) => setFormData({ ...formData, cityName: e.target.value })}
                         className="w-full px-2.5 py-1.5 rounded-lg border border-slate-200 text-xs font-medium focus:border-[#0F4C47] outline-none bg-white"
-                        placeholder="City"
+                        placeholder="City (e.g. Bengaluru)"
                       />
                     </div>
                   </div>
+                  <div className="text-[10px] text-slate-500 flex items-center gap-1.5 pt-0.5">
+                    <GraduationCap className="w-3.5 h-3.5 text-teal-700 shrink-0" />
+                    <span>Educational background & degree history will be detailed in your Profile Completion section.</span>
+                  </div>
+                </div>
+
+                {/* 3. Target Career Roles with "Others" Dynamic Option */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+                    <span>Target Career Role</span>
+                    <span className="text-[10px] text-teal-700 font-semibold">Career Aspiration</span>
+                  </label>
+                  <div className="relative">
+                    <Briefcase className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    <select
+                      value={formData.isCustomRole ? 'Others' : formData.targetRole}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        if (val === 'Others') {
+                          setFormData({
+                            ...formData,
+                            targetRole: 'Others',
+                            isCustomRole: true
+                          });
+                        } else {
+                          setFormData({
+                            ...formData,
+                            targetRole: val,
+                            isCustomRole: false,
+                            customTargetRole: ''
+                          });
+                        }
+                      }}
+                      className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold focus:border-[#0F4C47] outline-none bg-white cursor-pointer"
+                    >
+                      <option value="Backend Developer">Backend Developer</option>
+                      <option value="Software Developer">Software Developer</option>
+                      <option value="Data Analyst">Data Analyst</option>
+                      <option value="Full Stack Engineer">Full Stack Engineer</option>
+                      <option value="DevOps Engineer">DevOps Engineer</option>
+                      <option value="Cloud Systems Architect">Cloud Systems Architect</option>
+                      <option value="Electrical Maintenance Technician">Electrical Maintenance Technician</option>
+                      <option value="Electrical Technician">Electrical Technician</option>
+                      <option value="Embedded / Hardware Specialist">Embedded / Hardware Specialist</option>
+                      <option value="Automation Specialist">Automation Specialist</option>
+                      <option value="Others">Others (Enter Role Manually)</option>
+                    </select>
+                  </div>
+
+                  {/* If user selected Others: dynamically generated manual role input field */}
+                  {(formData.isCustomRole || formData.targetRole === 'Others') && (
+                    <div className="mt-2.5 p-3 rounded-xl bg-teal-50 border border-teal-200 animate-in fade-in duration-150">
+                      <label className="block text-[11px] font-bold text-[#0F4C47] mb-1">
+                        Enter Your Desired Target Role Manually <span className="text-rose-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={formData.customTargetRole}
+                        onChange={(e) => setFormData({ ...formData, customTargetRole: e.target.value })}
+                        placeholder="e.g. AI Prompt Engineer, Cyber Threat Analyst, Robotics Engineer..."
+                        className="w-full px-3 py-2 rounded-lg border border-teal-300 text-xs font-semibold focus:border-[#0F4C47] outline-none bg-white text-slate-800"
+                        autoFocus
+                      />
+                      <p className="text-[10px] text-teal-800 mt-1">
+                        Your custom target role will be recorded and personalized course recommendations will be mapped to it.
+                      </p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Preferred Languages (Multi-select) */}
@@ -526,7 +681,7 @@ export const AuthModal = ({
                           key={lang}
                           type="button"
                           onClick={() => toggleLanguage(lang)}
-                          className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 ${
+                          className={`px-2.5 py-1 rounded-xl text-xs font-bold transition-all flex items-center gap-1 cursor-pointer ${
                             isSelected
                               ? 'bg-[#0F4C47] text-white shadow-xs'
                               : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
@@ -726,26 +881,26 @@ export const AuthModal = ({
               <span className="text-[10px] text-teal-700 font-bold">Bypass credentials</span>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={() => handleInstantDemoLogin('learner')}
-                className="px-3 py-2.5 rounded-2xl bg-teal-50/70 hover:bg-teal-100 border border-teal-200 text-[#0F4C47] text-[11px] font-bold text-left transition-all flex items-center gap-2.5"
-                title="Log in directly as Learner Rohan Sharma"
+                className="px-2.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold text-left transition-all flex items-center gap-2"
+                title="Log in directly as Demo Learner"
               >
-                <div className="w-6 h-6 rounded-full bg-[#0F4C47] text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
-                  🧑‍🎓
+                <div className="w-6 h-6 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
+                  🎓
                 </div>
                 <div className="truncate">
                   <div className="font-black truncate">Learner</div>
-                  <div className="text-[9px] text-slate-500 truncate">Rohan Sharma</div>
+                  <div className="text-[9px] text-slate-500 truncate">Talha Jubayer</div>
                 </div>
               </button>
 
               <button
                 type="button"
                 onClick={() => handleInstantDemoLogin('institution')}
-                className="px-3 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold text-left transition-all flex items-center gap-2.5"
+                className="px-2.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold text-left transition-all flex items-center gap-2"
                 title="Log in directly as Institution Partner"
               >
                 <div className="w-6 h-6 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
@@ -759,8 +914,23 @@ export const AuthModal = ({
 
               <button
                 type="button"
+                onClick={() => handleInstantDemoLogin('employer')}
+                className="px-2.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold text-left transition-all flex items-center gap-2"
+                title="Log in directly as Corporate Recruiter"
+              >
+                <div className="w-6 h-6 rounded-full bg-teal-700 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
+                  💼
+                </div>
+                <div className="truncate">
+                  <div className="font-black truncate">Employer</div>
+                  <div className="text-[9px] text-slate-500 truncate">InfraCloud HR</div>
+                </div>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => handleInstantDemoLogin('government')}
-                className="px-3 py-2.5 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold text-left transition-all flex items-center gap-2.5"
+                className="px-2.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 border border-slate-200 text-slate-800 text-[11px] font-bold text-left transition-all flex items-center gap-2"
                 title="Log in directly as State Mission Director"
               >
                 <div className="w-6 h-6 rounded-full bg-slate-700 text-white flex items-center justify-center text-xs shrink-0 shadow-xs">
@@ -768,7 +938,7 @@ export const AuthModal = ({
                 </div>
                 <div className="truncate">
                   <div className="font-black truncate">Government</div>
-                  <div className="text-[9px] text-slate-500 truncate">State Mission</div>
+                  <div className="text-[9px] text-slate-500 truncate">State Analytics</div>
                 </div>
               </button>
             </div>

@@ -15,7 +15,8 @@ import {
   Layers,
   Users,
   RotateCcw,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Trophy
 } from 'lucide-react';
 
 export const Sidebar = () => {
@@ -23,42 +24,58 @@ export const Sidebar = () => {
     activeTab,
     setActiveTab,
     currentRole,
+    currentUser,
     setCurrentRole,
     resetDemoData,
-    logoutUser
+    logoutUser,
+    t
   } = useApp();
 
-  // Navigation items based on current role
+  const isUserMasked = currentUser?.leaderboardStatus !== 'ACTIVE';
+
+  // Navigation items based on current role with dynamic translations
   const learnerNav = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutGrid },
-    { id: 'course', label: 'Course', icon: BookOpen },
-    { id: 'analytics', label: 'Analytics', icon: TrendingUp },
-    { id: 'assignments', label: 'Assignments', icon: CheckCircle },
-    { id: 'attendance', label: 'Attendance', icon: CalendarDays },
-    { id: 'employment', label: 'Employment', icon: Briefcase },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: t('nav_dashboard', 'Dashboard'), icon: LayoutGrid },
+    { id: 'course', label: t('nav_courses', 'Course Catalog'), icon: BookOpen },
+    { id: 'jobs', label: t('nav_jobs', 'Job Marketplace'), icon: Briefcase, badge: 'Hiring' },
+    { id: 'analytics', label: t('nav_analytics', 'Analytics & Gaps'), icon: TrendingUp },
+    { id: 'leaderboard', label: t('nav_leaderboard', 'Leaderboard'), icon: Trophy },
+    ...(isUserMasked
+      ? [{ id: 'masking', label: t('nav_recovery', 'Get Back on Track'), icon: Sparkles, badge: 'Recovery' }]
+      : []),
+    { id: 'assignments', label: t('nav_assignments', 'Assignments'), icon: CheckCircle },
+    { id: 'attendance', label: t('nav_attendance', 'Attendance'), icon: CalendarDays },
+    { id: 'employment', label: t('nav_employment', 'Career Outcomes'), icon: TrendingUp },
+    { id: 'settings', label: t('nav_settings', 'Settings & Profile'), icon: Settings },
   ];
 
   const institutionNav = [
-    { id: 'institution', label: 'Batches & Courses', icon: Building },
-    { id: 'institution-students', label: 'Student Rosters', icon: BookOpen },
-    { id: 'institution-attendance', label: 'Attendance Logs', icon: CalendarDays },
-    { id: 'institution-registry', label: 'Learner Profiles Excel', icon: FileSpreadsheet },
+    { id: 'institution', label: t('nav_batches', 'Batches & Courses'), icon: Building },
+    { id: 'institution-students', label: t('nav_students', 'Student Rosters'), icon: BookOpen },
+    { id: 'institution-attendance', label: t('nav_attendance', 'Attendance Logs'), icon: CalendarDays },
+    { id: 'institution-registry', label: t('nav_excel_registry', 'Learner Profiles Excel'), icon: FileSpreadsheet },
+    { id: 'settings', label: t('nav_settings', 'Institution Profile'), icon: Settings },
+  ];
+
+  const employerNav = [
+    { id: 'employer', label: t('nav_recruiter_hub', 'Recruiter Hub & ATS'), icon: Briefcase },
+    { id: 'settings', label: t('nav_settings', 'Employer Profile'), icon: Settings },
   ];
 
   const governmentNav = [
-    { id: 'government', label: 'Govt / Private Hub', icon: Shield },
-    { id: 'government-private', label: '🏢 Private Testing & Cards', icon: Building },
-    { id: 'government-tracking', label: '🛡️ Govt Candidate Tracking', icon: Users },
-    { id: 'government-registry', label: 'Master Excel Registry', icon: FileSpreadsheet },
-    { id: 'government-drilldown', label: 'District Drilldown', icon: Layers },
-    { id: 'government-cohorts', label: 'Cohort Trends', icon: TrendingUp },
+    { id: 'government', label: t('nav_govt_overview', 'Statistical Overview'), icon: Shield },
+    { id: 'government-drilldown', label: t('nav_govt_drilldown', 'District Drilldown'), icon: Layers },
+    { id: 'government-cohorts', label: t('nav_govt_cohorts', 'Cohort & Wage Trends'), icon: TrendingUp },
+    { id: 'government-registry', label: t('nav_govt_registry', 'Master Registry Audits'), icon: FileSpreadsheet },
+    { id: 'settings', label: t('nav_mission_profile', 'Mission Profile'), icon: Settings },
   ];
 
   const currentNav = currentRole === 'learner'
     ? learnerNav
     : currentRole === 'institution'
     ? institutionNav
+    : currentRole === 'employer'
+    ? employerNav
     : governmentNav;
 
   return (
@@ -71,10 +88,10 @@ export const Sidebar = () => {
           </div>
           <div>
             <div className="font-extrabold text-sm text-[#0F4C47] tracking-tight flex items-center gap-1.5">
-              <span>SKILL FARMING</span>
+              <span>{t('platform_name', 'SKILL FARMING')}</span>
             </div>
             <div className="text-[10px] uppercase font-semibold text-teal-700 tracking-wider">
-              Intelligence Platform
+              {t('maharashtra_gov', 'Government of Maharashtra')}
             </div>
           </div>
         </div>
@@ -98,7 +115,12 @@ export const Sidebar = () => {
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-[#0F4C47]' : 'text-slate-500'}`} />
-                <span>{item.label}</span>
+                <span className="flex-1 text-left">{item.label}</span>
+                {item.badge && (
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full bg-amber-400 text-slate-950 animate-pulse">
+                    {item.badge}
+                  </span>
+                )}
               </button>
             );
           })}

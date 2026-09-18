@@ -516,7 +516,540 @@ export const SKILL_QUESTIONS = {
       correctAnswer: 0,
       explanation: 'In 3-phase systems, triplen harmonics (especially the 3rd harmonic, 150Hz) are in phase with each other. In the neutral wire, they do not cancel out like fundamental frequencies; they add together arithmetically, causing neutral currents up to 1.73 times phase currents.'
     }
+  ],
+
+  web_software: [
+    {
+      id: 'web-1',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 1,
+      difficulty: 'Easy',
+      competency: 'REST API Design',
+      question: 'In standard RESTful HTTP architecture, which HTTP method is explicitly designed to be idempotent for replacing a resource in its entirety?',
+      options: [
+        'POST',
+        'PUT',
+        'PATCH',
+        'CONNECT'
+      ],
+      correctAnswer: 1,
+      explanation: 'PUT is defined by RFC 7231 as idempotent: invoking PUT multiple times with identical payloads leaves the server in the same final state.'
+    },
+    {
+      id: 'web-2',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 2,
+      difficulty: 'Easy',
+      competency: 'Web Security',
+      question: 'What is the primary function of the Same-Origin Policy (SOP) implemented by modern web browsers?',
+      options: [
+        'Prevent malicious scripts from one origin from reading or modifying document data from another origin without authorization.',
+        'Speed up page download speeds by disabling foreign CSS files.',
+        'Encrypt all HTTP GET parameters using browser-generated SSL keys.',
+        'Enforce mandatory multi-factor authentication across all external links.'
+      ],
+      correctAnswer: 0,
+      explanation: 'The Same-Origin Policy restricts how documents or scripts loaded by one origin can interact with resources from another origin to prevent cross-site data theft.'
+    },
+    {
+      id: 'web-3',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 3,
+      difficulty: 'Easy',
+      competency: 'Git Version Control',
+      question: 'In Git, what is the key difference between `git merge` and `git rebase`?',
+      options: [
+        '`git merge` creates a new merge commit combining branches, while `git rebase` moves the base of your branch onto another commit creating a linear history.',
+        '`git rebase` permanently deletes all files not tracked on main.',
+        '`git merge` cannot be used in collaborative team repositories.',
+        '`git rebase` compresses all historical commits into a single commit automatically.'
+      ],
+      correctAnswer: 0,
+      explanation: '`git merge` preserves branch history with an explicit merge commit, whereas `git rebase` replays commits on top of the target branch creating a linear history.'
+    },
+    {
+      id: 'web-4',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 4,
+      difficulty: 'Moderate',
+      competency: 'Asynchronous Event Loop',
+      question: 'In JavaScript / Node.js runtime environments, which queue has highest execution priority after the synchronous call stack empties?',
+      options: [
+        'Macrotask queue (setTimeout / setInterval callbacks)',
+        'Microtask queue (Promise callbacks and process.nextTick)',
+        'I/O polling queue (fs.readFile callbacks)',
+        'Check queue (setImmediate callbacks)'
+      ],
+      correctAnswer: 1,
+      explanation: 'Microtasks (Promises, process.nextTick) are drained immediately after each call stack operation completes, before the event loop advances to macrotask timers.'
+    },
+    {
+      id: 'web-5',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 5,
+      difficulty: 'Moderate',
+      competency: 'Frontend Architecture',
+      question: 'Why do modern UI frameworks utilize a Virtual DOM or compiler reactivity rather than updating the real browser DOM on every state change?',
+      options: [
+        'Manipulating the real DOM directly triggers costly browser recalculations (layout and repaint); diffing in memory batch-applies minimal real DOM updates.',
+        'The real DOM cannot store strings longer than 256 characters.',
+        'Browser engines block real DOM changes that happen outside HTTPS connections.',
+        'Virtual DOM eliminates the need for CSS style rules entirely.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Real DOM manipulations trigger expensive style recalculations, reflows, and repaints. Diffing state changes in an in-memory representation batches only minimal real DOM mutations.'
+    },
+    {
+      id: 'web-6',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 6,
+      difficulty: 'Moderate',
+      competency: 'Backend ORM Optimization',
+      question: 'What constitutes the classic "N+1 Query Problem" in web application backend ORMs, and how is it resolved?',
+      options: [
+        'Fetching 1 parent record causes N separate database queries for related child records; resolved by using Eager Loading / JOIN queries.',
+        'Inserting N records into an array throws an out-of-memory error; resolved by rebooting the backend.',
+        'Running 1 query on N database shards simultaneously; resolved by turning off sharding.',
+        'Submitting forms with N input fields; resolved by splitting forms into multiple pages.'
+      ],
+      correctAnswer: 0,
+      explanation: 'The N+1 problem occurs when an application executes 1 initial query for parent items and then N secondary queries for each child. Eager loading fetches all child records in a single batch query using IN or JOIN.'
+    },
+    {
+      id: 'web-7',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 7,
+      difficulty: 'Tough',
+      competency: 'API Rate Limiting',
+      question: 'Which rate-limiting algorithm permits sudden bursts of API traffic up to a maximum capacity while refilling capacity at a constant steady rate over time?',
+      options: [
+        'Fixed Window Counter',
+        'Token Bucket Algorithm',
+        'Sliding Log Algorithm',
+        'Round-Robin DNS'
+      ],
+      correctAnswer: 1,
+      explanation: 'The Token Bucket algorithm accumulates tokens at a constant rate up to bucket capacity, allowing temporary bursts that consume stored tokens without dropping requests.'
+    },
+    {
+      id: 'web-8',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 8,
+      difficulty: 'Tough',
+      competency: 'Web Application Security',
+      question: 'How does an HTTP-Only flag on session authentication cookies effectively defend against Cross-Site Scripting (XSS) attacks?',
+      options: [
+        'It prevents client-side JavaScript from accessing `document.cookie`, preventing injected malicious scripts from stealing the session token.',
+        'It encrypts the cookie using AES-256 in the browser localStorage.',
+        'It forces the cookie to expire every 30 seconds automatically.',
+        'It disables form submissions across external subdomains.'
+      ],
+      correctAnswer: 0,
+      explanation: 'An HttpOnly cookie cannot be accessed through document.cookie by client-side scripts, neutralizing cookie-stealing payloads during XSS incidents.'
+    },
+    {
+      id: 'web-9',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 9,
+      difficulty: 'Very Tough',
+      competency: 'Distributed System Resiliency',
+      question: 'What is the primary function of the Circuit Breaker pattern (e.g. Netflix Hystrix / Resilience4j) in distributed microservices architectures?',
+      options: [
+        'Detect failures and encapsulate the logic of preventing a failure from constantly recurring, avoiding cascading service outages across the distributed network.',
+        'Automatically balance database read replicas using round-robin DNS.',
+        'Convert all HTTP REST requests into synchronous WebSocket streams.',
+        'Compress JSON response bodies using Brotli algorithm.'
+      ],
+      correctAnswer: 0,
+      explanation: 'A circuit breaker trips to an OPEN state when downstream error rates cross a threshold, quickly failing fast or executing fallbacks instead of overwhelming degraded downstream services and draining thread pools.'
+    },
+    {
+      id: 'web-10',
+      skillId: 'web_software',
+      skillName: 'Software & Web Engineering',
+      questionNumber: 10,
+      difficulty: 'Very Tough',
+      competency: 'System Scalability',
+      question: 'In high-scale web platforms handling 50,000 requests/sec, why is an asynchronous event-driven message queue (e.g. Apache Kafka or RabbitMQ) preferred over synchronous HTTP calls for order processing?',
+      options: [
+        'It decouples producing and consuming services, enabling backpressure buffering, horizontal worker scaling, and preventing upstream API timeout cascades.',
+        'Message queues run on specialized hardware with zero latency.',
+        'Message queues bypass database storage entirely, preventing data writes.',
+        'Synchronous HTTP cannot transmit JSON payloads across different server racks.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Message queues decouple producers from consumers, buffering workload spikes, absorbing slow downstream systems without client timeouts, and allowing dynamic worker scaling.'
+    }
+  ],
+
+  data_analytics: [
+    {
+      id: 'da-1',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 1,
+      difficulty: 'Easy',
+      competency: 'Data Systems Architecture',
+      question: 'What is the fundamental architectural difference between an OLTP (Online Transaction Processing) database and an OLAP (Online Analytical Processing) warehouse?',
+      options: [
+        'OLTP systems optimize for fast, row-level transactional writes and lookups; OLAP systems optimize for complex analytical aggregations across columnar datasets.',
+        'OLTP systems use columnar compression while OLAP systems store unindexed flat files.',
+        'OLAP systems do not support SQL syntax.',
+        'OLTP systems are exclusively hosted on mobile devices.'
+      ],
+      correctAnswer: 0,
+      explanation: 'OLTP databases (PostgreSQL, MySQL) excel at fast, atomic row updates (ACID). OLAP systems (Snowflake, BigQuery, ClickHouse) store data column-by-column for rapid scans over billions of values.'
+    },
+    {
+      id: 'da-2',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 2,
+      difficulty: 'Easy',
+      competency: 'SQL Analytical Functions',
+      question: 'In SQL window functions, how does `DENSE_RANK()` differ from `RANK()` when evaluating tied rows?',
+      options: [
+        '`DENSE_RANK()` does not skip rank numbers after duplicate values (e.g. 1, 2, 2, 3), whereas `RANK()` leaves gaps (e.g. 1, 2, 2, 4).',
+        '`DENSE_RANK()` randomly assigns ranks to tied values.',
+        '`DENSE_RANK()` can only be applied to integer columns.',
+        '`RANK()` sorts in descending order while `DENSE_RANK()` sorts only ascending.'
+      ],
+      correctAnswer: 0,
+      explanation: 'RANK() skips positions for tied rows based on count (1, 2, 2, 4), whereas DENSE_RANK() guarantees consecutive numbering without gaps (1, 2, 2, 3).'
+    },
+    {
+      id: 'da-3',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 3,
+      difficulty: 'Easy',
+      competency: 'Data Quality & Cleaning',
+      question: 'When analyzing skewed numeric salary data containing extreme high-end outliers, which measure of central tendency provides the most reliable metric?',
+      options: [
+        'Arithmetic Mean',
+        'Median',
+        'Standard Deviation',
+        'Variance'
+      ],
+      correctAnswer: 1,
+      explanation: 'The median represents the 50th percentile and is robust against extreme outliers, whereas the arithmetic mean is easily distorted by high-end values.'
+    },
+    {
+      id: 'da-4',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 4,
+      difficulty: 'Moderate',
+      competency: 'SQL Aggregation Filtering',
+      question: 'In SQL statement execution order, why can an aggregate condition like `COUNT(order_id) > 5` be placed in the `HAVING` clause but NOT in the `WHERE` clause?',
+      options: [
+        '`WHERE` filters individual rows before grouping occurs, whereas `HAVING` filters grouped summary rows after aggregate calculation.',
+        '`HAVING` uses Python syntax while `WHERE` uses C++ syntax.',
+        '`WHERE` is limited to a maximum of 3 conditions per query.',
+        'Aggregate functions are deprecated in modern ANSI SQL.'
+      ],
+      correctAnswer: 0,
+      explanation: 'The logical execution sequence is FROM -> WHERE -> GROUP BY -> HAVING -> SELECT. At the WHERE stage, row aggregation has not yet occurred.'
+    },
+    {
+      id: 'da-5',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 5,
+      difficulty: 'Moderate',
+      competency: 'Pandas & Python Data',
+      question: 'In Python Pandas, what is the most memory-efficient approach to handle repeated low-cardinality string columns (e.g. State names, Country, Department)?',
+      options: [
+        'Convert the column data type from `object` to `category`.',
+        'Convert all strings into binary hex strings.',
+        'Duplicate the column across multiple DataFrames.',
+        'Store the values in a Python tuple inside each cell.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Categorical types replace repeated string objects with small integer codes mapped to a unique category dictionary, reducing memory consumption by up to 90%.'
+    },
+    {
+      id: 'da-6',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 6,
+      difficulty: 'Moderate',
+      competency: 'Data Warehousing Schemas',
+      question: 'In Dimensional Data Modeling (Kimball methodology), what distinguishes a Fact Table from a Dimension Table?',
+      options: [
+        'Fact tables contain quantitative numerical measurements and foreign keys; Dimension tables contain contextual descriptive attributes used for filtering and grouping.',
+        'Fact tables only store customer names and contact details.',
+        'Dimension tables can only have 1 column.',
+        'Fact tables are deleted after each query execution.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Fact tables record business events (e.g. sales amount, transaction quantity, metrics). Dimension tables contain descriptive context (e.g. customer name, location, product category).'
+    },
+    {
+      id: 'da-7',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 7,
+      difficulty: 'Tough',
+      competency: 'Cohort & Retention Analytics',
+      question: 'How is a 6-Month Employment Retention Rate mathematically calculated in longitudinal skill program tracking?',
+      options: [
+        '(Number of enrolled graduates actively employed at 6 months ÷ Total placed graduates in cohort) × 100',
+        '(Total courses completed ÷ Total enrolled candidates) × 100',
+        '(Highest wage recorded ÷ Minimum wage) × 100',
+        '(Number of dropouts × 6) ÷ Total applicants'
+      ],
+      correctAnswer: 0,
+      explanation: 'Longitudinal retention evaluates verified sustained employment 6 months post-placement as a ratio of the placed cohort to confirm job sustainability.'
+    },
+    {
+      id: 'da-8',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 8,
+      difficulty: 'Tough',
+      competency: 'Outlier Detection',
+      question: 'Using the Tukey Interquartile Range (IQR) method, what mathematical boundaries define lower and upper mild outliers?',
+      options: [
+        'Values below Q1 - 1.5 * IQR or values above Q3 + 1.5 * IQR',
+        'Values below Mean - 1 * StdDev or above Mean + 1 * StdDev',
+        'Values strictly equal to 0 or 100',
+        'Values outside the top 5% and bottom 5%'
+      ],
+      correctAnswer: 0,
+      explanation: 'Tukey established mild outlier thresholds at 1.5 times the IQR (Q3 - Q1) below the first quartile and above the third quartile.'
+    },
+    {
+      id: 'da-9',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 9,
+      difficulty: 'Very Tough',
+      competency: 'Advanced SQL CTEs & Gaps',
+      question: 'To calculate consecutive daily active learning streaks in SQL, which advanced querying technique effectively groups contiguous date records together?',
+      options: [
+        'Subtracting a sequential `ROW_NUMBER()` from the activity date to generate a constant grouping date identifier (Gaps & Islands technique).',
+        'Calling `RANDOM()` inside a `CROSS JOIN`.',
+        'Using `UNION ALL` across 365 static queries.',
+        'Disabling indexes to force a full table scan.'
+      ],
+      correctAnswer: 0,
+      explanation: 'The Gaps and Islands date-subtraction method (date - ROW_NUMBER() * interval) computes a stable group anchor for continuous days, separating non-consecutive streak islands.'
+    },
+    {
+      id: 'da-10',
+      skillId: 'data_analytics',
+      skillName: 'Data Analytics & SQL',
+      questionNumber: 10,
+      difficulty: 'Very Tough',
+      competency: 'ETL Pipeline Integrity',
+      question: 'In automated data ingestion pipelines, what constitutes an "Idempotent ETL Pipeline" and why is it essential for reliable reporting?',
+      options: [
+        'A pipeline that yields identical analytical results regardless of how many times it is rerun with the same source input data, preventing duplicate records during retries.',
+        'A pipeline that only executes once and self-destructs.',
+        'A pipeline written without any SQL queries.',
+        'A pipeline that converts all numbers into floating points.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Idempotent pipelines (using upserts, merge keys, or partitioned overwrite) guarantee that network timeouts or replay retries do not duplicate rows or distort metrics.'
+    }
+  ],
+
+  cloud_devops: [
+    {
+      id: 'cd-1',
+      skillId: 'cloud_devops',
+      skillName: 'Cloud & DevOps Architecture',
+      questionNumber: 1,
+      difficulty: 'Easy',
+      competency: 'Containerization Basics',
+      question: 'What is the primary difference between a Docker Image and a Docker Container?',
+      options: [
+        'An image is a read-only template with instructions; a container is a runnable, isolated instance of that image with a read-write layer.',
+        'Images run on physical hardware; containers run inside virtual machines only.',
+        'Containers cannot be connected to networks; images handle networking.',
+        'An image can only be created on Windows; containers require Linux.'
+      ],
+      correctAnswer: 0,
+      explanation: 'A Docker image is an immutable blueprint consisting of layered file systems. A container is a live process instantiated from that image with a thin read/write layer.'
+    },
+    {
+      id: 'cd-2',
+      skillId: 'cloud_devops',
+      skillName: 'Cloud & DevOps Architecture',
+      questionNumber: 2,
+      difficulty: 'Easy',
+      competency: 'CI/CD Pipelines',
+      question: 'In automated continuous deployment (CD), what is the key advantage of a "Blue-Green Deployment" strategy?',
+      options: [
+        'It maintains two identical production environments, allowing instant cutover with zero downtime and immediate rollback if defects are detected.',
+        'It compresses Docker images into ZIP files.',
+        'It eliminates the need for software testing before release.',
+        'It requires half the server hardware of single deployments.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Blue-Green deployment runs two identical production fleets (Blue and Green). Traffic routes to one while the other updates. Router cutover is instantaneous and rollback is instant.'
+    },
+    {
+      id: 'cd-3',
+      skillId: 'cloud_devops',
+      skillName: 'Cloud & DevOps Architecture',
+      questionNumber: 3,
+      difficulty: 'Moderate',
+      competency: 'Container Optimization',
+      question: 'Why are Docker Multi-Stage Builds considered a core best practice for production application deployments?',
+      options: [
+        'They separate build dependencies (compilers, dev packages) from runtime artifacts, resulting in dramatically smaller and more secure production container images.',
+        'They automatically double the CPU performance of containerized Node.js apps.',
+        'They bypass Linux kernel security limits.',
+        'They allow containers to run without an operating system.'
+      ],
+      correctAnswer: 0,
+      explanation: 'Multi-stage builds permit heavy compilers and SDKs in intermediate build stages, while copying only compiled binaries or dist assets into a minimal lightweight production base image (e.g. Alpine/Scratch).'
+    },
+    {
+      id: 'cd-4',
+      skillId: 'cloud_devops',
+      skillName: 'Cloud & DevOps Architecture',
+      questionNumber: 4,
+      difficulty: 'Moderate',
+      competency: 'Kubernetes Orchestration',
+      question: 'In Kubernetes, what is the core responsibility of the Controller Manager / Reconciliation Loop?',
+      options: [
+        'Continuously comparing the desired state (defined in YAML manifests) against the actual cluster state, driving adjustments to make them converge.',
+        'Compiling Go code into container images.',
+        'Routing public DNS records directly to worker pod IP addresses.',
+        'Scanning application code for syntax errors.'
+      ],
+      correctAnswer: 0,
+      explanation: 'The reconciliation loop continuously reads observed cluster state from the API server and performs self-healing mutations to match the user\'s desired spec.'
+    },
+    {
+      id: 'cd-5',
+      skillId: 'cloud_devops',
+      skillName: 'Cloud & DevOps Architecture',
+      questionNumber: 5,
+      difficulty: 'Tough',
+      competency: 'Linux & Graceful Shutdown',
+      question: 'When a container platform terminates a pod, what is the operational purpose of sending `SIGTERM` before `SIGKILL`?',
+      options: [
+        '`SIGTERM` notifies the application process to drain active HTTP connections and flush database transactions gracefully before `SIGKILL` forces abrupt termination.',
+        '`SIGTERM` reboots the physical host machine.',
+        '`SIGKILL` cannot stop Node.js processes.',
+        '`SIGTERM` doubles the memory allocation for remaining processes.'
+      ],
+      correctAnswer: 0,
+      explanation: 'SIGTERM can be caught by the application to close network sockets, complete ongoing requests, and commit buffers. If it does not exit within the grace period, SIGKILL forces termination.'
+    },
+    {
+      id: 'cd-6',
+      skillId: 'cloud_devops',
+      skillName: 'Cloud & DevOps Architecture',
+      questionNumber: 6,
+      difficulty: 'Very Tough',
+      competency: 'Infrastructure as Code (IaC)',
+      question: 'What is the concept of "Idempotence" in modern declarative Infrastructure as Code (e.g. Terraform / Ansible)?',
+      options: [
+        'Executing the configuration multiple times leaves the target infrastructure in the exact specified state without duplicate resources or unintended side effects.',
+        'Encrypting all Terraform state files in public GitHub repositories.',
+        'Running cloud resources exclusively on spot instances.',
+        'Deleting all servers before re-provisioning on each git push.'
+      ],
+      correctAnswer: 0,
+      explanation: 'An idempotent IaC tool inspects existing state and only provisions or alters resources necessary to attain the target state, preventing redundant or duplicate cloud entities.'
+    }
   ]
+};
+
+// Skill Metadata helper
+export const SKILL_META = {
+  web_software: {
+    id: 'web_software',
+    name: 'Software Engineering & Web APIs',
+    domain: 'Software & Technology',
+    icon: 'Code2',
+    color: 'teal',
+    badgeColor: 'bg-teal-50 text-[#0F4C47] border-teal-200',
+    description: 'System design, RESTful APIs, web standards, state management, and Git architecture.'
+  },
+  data_analytics: {
+    id: 'data_analytics',
+    name: 'Data Analytics & SQL Pipelines',
+    domain: 'Data Science & BI',
+    icon: 'BarChart3',
+    color: 'amber',
+    badgeColor: 'bg-amber-50 text-amber-900 border-amber-200',
+    description: 'Data transformation, SQL aggregations, metrics modeling, cohort retention, and ETL pipelines.'
+  },
+  cloud_devops: {
+    id: 'cloud_devops',
+    name: 'Cloud & DevOps Architecture',
+    domain: 'Cloud Systems',
+    icon: 'Cloud',
+    color: 'purple',
+    badgeColor: 'bg-purple-50 text-purple-900 border-purple-200',
+    description: 'Docker containerization, Kubernetes reconciliation, CI/CD pipelines, and Linux resilience.'
+  },
+  dbms: {
+    id: 'dbms',
+    name: 'DBMS & Database Architecture',
+    domain: 'Databases',
+    icon: 'Database',
+    color: 'teal',
+    badgeColor: 'bg-teal-50 text-[#0F4C47] border-teal-200',
+    description: 'Relational integrity, B-Tree index optimization, MVCC concurrency, and ACID transactions.'
+  },
+  dsa: {
+    id: 'dsa',
+    name: 'Data Structures & Algorithms',
+    domain: 'Computer Science',
+    icon: 'Binary',
+    color: 'blue',
+    badgeColor: 'bg-sky-50 text-sky-900 border-sky-200',
+    description: 'Algorithmic complexity, graphs, dynamic programming, sliding window, and search trees.'
+  },
+  electrical: {
+    id: 'electrical',
+    name: 'Industrial Electrical Works',
+    domain: 'Core Electrical',
+    icon: 'Zap',
+    color: 'emerald',
+    badgeColor: 'bg-emerald-50 text-emerald-900 border-emerald-200',
+    description: 'LOTO safety protocols, 3-phase motor starters, earth leakage, and commercial wiring standards.'
+  }
+};
+
+// Dynamic Domain Matcher: Tailors assessment domains strictly based on chosen target career role
+export const getAssessmentDomainsForRole = (targetRole = '') => {
+  const role = (targetRole || '').toLowerCase().trim();
+
+  // 1. Core Electrical Technician / Maintenance (ONLY role that receives Electrical!)
+  if (role.includes('electrical') || role.includes('electrician') || role.includes('wireman')) {
+    return ['electrical'];
+  }
+
+  // 2. Data Analyst / Data Scientist / Business Intelligence
+  if (role.includes('data') || role.includes('analyst') || role.includes('analytics') || role.includes('bi ') || role.includes('intelligence')) {
+    return ['data_analytics', 'dbms'];
+  }
+
+  // 3. Cloud / DevOps / SRE / Systems Architecture
+  if (role.includes('cloud') || role.includes('devops') || role.includes('sre') || role.includes('infrastructure') || role.includes('reliability')) {
+    return ['cloud_devops', 'web_software'];
+  }
+
+  // 4. Software Developer / Full Stack / Backend / Web Engineer / General Tech:
+  // Strictly NO electrical! Uses web_software and dsa (or dbms)
+  return ['web_software', 'dsa'];
 };
 
 export const getCapabilityLevel = (score) => {

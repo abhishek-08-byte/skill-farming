@@ -9,6 +9,7 @@ import {
   RotateCcw,
   User,
   Building,
+  Briefcase,
   Shield,
   ChevronRight
 } from 'lucide-react';
@@ -18,6 +19,7 @@ export const ProfileCompletionCard = ({ role = 'learner' }) => {
     openProfileWizard,
     learnerCompletion,
     institutionCompletion,
+    employerCompletion,
     governmentCompletion,
     simulateBlankProfile,
     simulateFilledProfile
@@ -28,6 +30,8 @@ export const ProfileCompletionCard = ({ role = 'learner' }) => {
       ? learnerCompletion
       : role === 'institution'
       ? institutionCompletion
+      : role === 'employer'
+      ? employerCompletion
       : governmentCompletion;
 
   const { percentage, passedCount, totalCount, missingFields, isComplete } = completion;
@@ -40,6 +44,8 @@ export const ProfileCompletionCard = ({ role = 'learner' }) => {
       ? 'Learner Profile'
       : role === 'institution'
       ? 'Institution Profile'
+      : role === 'employer'
+      ? 'Employer & Recruiter Profile'
       : 'Government Department Profile';
 
   return (
@@ -54,6 +60,7 @@ export const ProfileCompletionCard = ({ role = 'learner' }) => {
             <span className="bg-teal-100/80 text-[#0F4C47] px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1.5">
               {role === 'learner' && <User className="w-3 h-3" />}
               {role === 'institution' && <Building className="w-3 h-3" />}
+              {role === 'employer' && <Briefcase className="w-3 h-3" />}
               {role === 'government' && <Shield className="w-3 h-3" />}
               <span>{roleTitle} Status</span>
             </span>

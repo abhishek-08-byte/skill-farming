@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { SKILL_QUESTIONS, getCapabilityLevel } from '../../data/questions';
+import { SKILL_QUESTIONS, getCapabilityLevel, getAssessmentDomainsForRole, SKILL_META } from '../../data/questions';
 import {
   X,
   ChevronLeft,
@@ -15,32 +15,51 @@ import {
   Database,
   Binary,
   Zap,
-  Info
+  Info,
+  Lock,
+  UserCheck
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export const AssessmentModal = ({ isOpen, onClose }) => {
   const {
     currentUser,
+    learnerCompletion,
+    openProfileWizard,
     submitAssessmentResult,
     setActiveTab
   } = useApp();
 
-  const selectedSkills = currentUser.selectedSkills || ['dbms', 'dsa', 'electrical'];
-  const [activeSkillId, setActiveSkillId] = useState(selectedSkills[0] || 'dbms');
+  // Dynamically resolve assessment domains strictly based on target role
+  // Electrical is ONLY given if target role is Electrical!
+  // Software / Fullstack / Backend receives Web Software & DSA / DBMS!
+  const userTargetRole = currentUser.customTargetRole || currentUser.targetRole || 'Software Developer';
+  const roleDomains = getAssessmentDomainsForRole(userTargetRole);
+  const selectedSkills = (currentUser.selectedSkills && currentUser.selectedSkills.length > 0)
+    ? currentUser.selectedSkills.filter(s => {
+        // If user is software/not electrical, strictly filter out electrical
+        const isElectricalRole = userTargetRole.toLowerCase().includes('electrical') || userTargetRole.toLowerCase().includes('electrician');
+        if (!isElectricalRole && s === 'electrical') return false;
+        return true;
+      })
+    : roleDomains;
+
+  // Fallback if empty
+  const activeDomains = selectedSkills.length > 0 ? selectedSkills : roleDomains;
+
+  const [activeSkillId, setActiveSkillId] = useState(activeDomains[0] || 'web_software');
   const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
 
   // Store answers per skill: { [skillId]: { [questionIdx]: selectedOptionIndex } }
-  const [userAnswers, setUserAnswers] = useState({
-    dbms: {},
-    dsa: {},
-    electrical: {}
-  });
+  const [userAnswers, setUserAnswers] = useState({});
 
   // Track completed submissions: { [skillId]: resultObject }
   const [submittedResults, setSubmittedResults] = useState(null);
 
   if (!isOpen) return null;
+
+  // Check profile completion lock: Must be 100% to take assessment
+  const isProfileLocked = (learnerCompletion?.percentage || 0) < 100;
 
   const currentQuestions = SKILL_QUESTIONS[activeSkillId] || [];
   const currentQuestion = currentQuestions[currentQuestionIdx];
@@ -114,10 +133,10 @@ export const AssessmentModal = ({ isOpen, onClose }) => {
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-[#F8FAF9]">
           <div>
             <div className="text-[11px] uppercase font-bold text-teal-700 tracking-wider">
-              10-Question Data-Driven Assessment
+              {isProfileLocked ? 'Profile Verification Required' : 'Role-Tailored Capability Evaluation Engine'}
             </div>
             <h2 className="text-lg font-extrabold text-slate-900">
-              Capability Evaluation Engine
+              {isProfileLocked ? 'Skill Assessment Locked' : `Evaluation: ${userTargetRole}`}
             </h2>
           </div>
           <button
@@ -128,51 +147,112 @@ export const AssessmentModal = ({ isOpen, onClose }) => {
           </button>
         </div>
 
-        {/* Skill Selector Tabs with Individual Progress Bars */}
-        <div className="px-6 pt-3 pb-2 bg-white border-b border-slate-100">
-          <div className="text-xs font-semibold text-slate-500 mb-2">
-            Selected Skills ({selectedSkills.length} Total • 10 Questions Per Skill):
-          </div>
-          <div className="grid grid-cols-3 gap-2">
-            {selectedSkills.map((sId) => {
-              const count = skillAnswerCount(sId);
-              const isActive = activeSkillId === sId;
-              const skillLabel = sId === 'dbms' ? 'DBMS' : sId === 'dsa' ? 'DSA' : 'Electrical';
+        {/* PROFILE COMPLETION LOCK SCREEN: User must reach 100% profile completion */}
+        {isProfileLocked ? (
+          <div className="p-8 text-center flex flex-col items-center justify-center flex-1 space-y-5 animate-in fade-in duration-200">
+            <div className="w-16 h-16 rounded-3xl bg-amber-100 text-amber-800 flex items-center justify-center shadow-inner border border-amber-200">
+              <Lock className="w-8 h-8" />
+            </div>
 
-              return (
-                <button
-                  key={sId}
-                  onClick={() => {
-                    setActiveSkillId(sId);
-                    setCurrentQuestionIdx(0);
-                    setSubmittedResults(null);
-                  }}
-                  className={`p-2.5 rounded-xl border text-left transition-all ${
-                    isActive
-                      ? 'border-[#0F4C47] bg-[#E2F1ED]/50 ring-2 ring-[#0F4C47]/20 shadow-xs'
-                      : 'border-slate-200 hover:bg-slate-50'
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-xs font-bold mb-1">
-                    <span className={isActive ? 'text-[#0F4C47]' : 'text-slate-800'}>
-                      {skillLabel}
-                    </span>
-                    <span className="text-[10px] text-slate-500">{count}/10</span>
-                  </div>
-                  {/* Progress bar per skill */}
-                  <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-300 ${
-                        isActive ? 'bg-[#0F4C47]' : 'bg-slate-400'
-                      }`}
-                      style={{ width: `${(count / 10) * 100}%` }}
-                    ></div>
-                  </div>
-                </button>
-              );
-            })}
+            <div className="max-w-md">
+              <span className="text-xs font-black uppercase tracking-wider text-amber-700 bg-amber-100 px-2.5 py-0.5 rounded-full border border-amber-200">
+                100% Profile Verification Mandated
+              </span>
+              <h3 className="text-xl font-black text-slate-900 mt-2">
+                Complete Your Profile to Unlock Assessment
+              </h3>
+              <p className="text-xs sm:text-sm text-slate-600 mt-1.5 leading-relaxed">
+                As a newly enrolled learner, your skill assessment test is tailored to your chosen targeted career role (<strong>{userTargetRole}</strong>). Please complete your profile (location, photo, career destination) to 100% to unlock this assessment test.
+              </p>
+            </div>
+
+            {/* Completion Progress Indicator */}
+            <div className="w-full max-w-sm p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-700 mb-1.5">
+                <span>Profile Readiness</span>
+                <span className="text-amber-700">{learnerCompletion?.percentage || 0}%</span>
+              </div>
+              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
+                <div
+                  className="bg-amber-500 h-full rounded-full transition-all duration-500"
+                  style={{ width: `${learnerCompletion?.percentage || 0}%` }}
+                ></div>
+              </div>
+              <div className="text-[11px] text-slate-500 mt-2">
+                {learnerCompletion?.missingFields?.length > 0
+                  ? `Missing: ${learnerCompletion.missingFields.slice(0, 3).map(f => f.label).join(', ')}`
+                  : 'Profile completion in progress.'}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  onClose();
+                  openProfileWizard('learner', 1);
+                }}
+                className="px-6 py-3 rounded-2xl bg-[#0F4C47] hover:bg-[#0A3632] text-white font-black text-xs sm:text-sm shadow-md transition-all flex items-center gap-2 hover:scale-[1.02] cursor-pointer"
+              >
+                <UserCheck className="w-4 h-4" />
+                <span>Complete Profile Now (100%) →</span>
+              </button>
+              <button
+                onClick={onClose}
+                className="px-4 py-3 rounded-2xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-bold text-xs transition-colors cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
           </div>
-        </div>
+        ) : (
+          <>
+            {/* Skill Selector Tabs with Individual Progress Bars */}
+            <div className="px-6 pt-3 pb-2 bg-white border-b border-slate-100">
+              <div className="flex items-center justify-between text-xs font-semibold text-slate-500 mb-2">
+                <span>Role Domains for {userTargetRole} ({activeDomains.length} Evaluated):</span>
+                <span className="text-[11px] text-teal-700 font-bold">10 Questions Each</span>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {activeDomains.map((sId) => {
+                  const count = skillAnswerCount(sId);
+                  const isActive = activeSkillId === sId;
+                  const meta = SKILL_META[sId];
+                  const skillLabel = meta?.name || (sId === 'dbms' ? 'DBMS / SQL' : sId === 'dsa' ? 'DSA' : sId);
+
+                  return (
+                    <button
+                      key={sId}
+                      onClick={() => {
+                        setActiveSkillId(sId);
+                        setCurrentQuestionIdx(0);
+                        setSubmittedResults(null);
+                      }}
+                      className={`p-2.5 rounded-xl border text-left transition-all ${
+                        isActive
+                          ? 'border-[#0F4C47] bg-[#E2F1ED]/50 ring-2 ring-[#0F4C47]/20 shadow-xs'
+                          : 'border-slate-200 hover:bg-slate-50'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between text-xs font-bold mb-1">
+                        <span className={`truncate ${isActive ? 'text-[#0F4C47]' : 'text-slate-800'}`} title={skillLabel}>
+                          {skillLabel}
+                        </span>
+                        <span className="text-[10px] text-slate-500 shrink-0 ml-1">{count}/10</span>
+                      </div>
+                      {/* Progress bar per skill */}
+                      <div className="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            isActive ? 'bg-[#0F4C47]' : 'bg-slate-400'
+                          }`}
+                          style={{ width: `${(count / 10) * 100}%` }}
+                        ></div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
         {/* Modal Body */}
         <div className="p-6 overflow-y-auto flex-1">
@@ -353,6 +433,8 @@ export const AssessmentModal = ({ isOpen, onClose }) => {
               </button>
             )}
           </div>
+        )}
+          </>
         )}
       </div>
     </div>

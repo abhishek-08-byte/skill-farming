@@ -22,7 +22,9 @@ import {
   FileSpreadsheet,
   Download,
   Database,
-  CheckCircle
+  CheckCircle,
+  Camera,
+  Upload
 } from 'lucide-react';
 
 export const CompleteProfileWizard = () => {
@@ -40,6 +42,8 @@ const CompleteProfileWizardModal = () => {
     updateUserProfile,
     institutionProfile,
     updateInstitutionProfile,
+    recruiterProfile,
+    updateEmployerProfile,
     switchInstitutionSubType,
     governmentProfile,
     updateGovernmentProfile,
@@ -51,10 +55,11 @@ const CompleteProfileWizardModal = () => {
     learnerProfilesRegistry
   } = useApp();
 
-  // Wizard active role: 'learner' | 'institution' | 'government'
+  // Wizard active role: 'learner' | 'institution' | 'employer' | 'government'
   const role = profileWizardRole || 'learner';
   // Institution sub-type: 'employer' | 'training_provider'
   const [instSubType, setInstSubType] = useState(institutionProfile.subType || 'employer');
+  const isEmployerRole = role === 'employer' || (role === 'institution' && instSubType === 'employer');
 
   // Step state
   const [currentStep, setCurrentStep] = useState(profileWizardInitialStep || 1);
@@ -63,12 +68,16 @@ const CompleteProfileWizardModal = () => {
 
   // Local draft states
   const [learnerDraft, setLearnerDraft] = useState({ ...currentUser });
-  const [institutionDraft, setInstitutionDraft] = useState({ ...institutionProfile });
+  const [institutionDraft, setInstitutionDraft] = useState(() => ({
+    ...(role === 'employer' ? recruiterProfile : institutionProfile)
+  }));
   const [govDraft, setGovDraft] = useState({ ...governmentProfile });
 
   // Determine total steps based on role
   let totalSteps = 8;
-  if (role === 'institution') {
+  if (role === 'employer') {
+    totalSteps = 6;
+  } else if (role === 'institution') {
     totalSteps = instSubType === 'employer' ? 6 : 7;
   } else if (role === 'government') {
     totalSteps = 6;
@@ -80,10 +89,10 @@ const CompleteProfileWizardModal = () => {
 
   // Step Definitions
   const learnerSteps = [
-    { num: 1, title: 'Basic Information', desc: 'Identity, contacts & bio', optional: false },
-    { num: 2, title: 'Location & Relocation', desc: 'Geography & work mode', optional: false },
-    { num: 3, title: 'Education Background', desc: 'Degrees & institutions', optional: false },
-    { num: 4, title: 'Career & Target Role', desc: 'Aspirations & wage goals', optional: false },
+    { num: 1, title: 'Basic Information', desc: 'Photo, identity & bio', optional: false },
+    { num: 2, title: 'Location (Where you stay)', desc: 'Current residence & work mode', optional: false },
+    { num: 3, title: 'Educational Background', desc: 'Degrees & institutions', optional: false },
+    { num: 4, title: 'Career & Target Role', desc: 'Target role & salary band', optional: false },
     { num: 5, title: 'Skills & Proficiency', desc: 'Core competency assessment', optional: false },
     { num: 6, title: 'Certifications & Portfolio', desc: 'Credentials & public links', optional: true },
     { num: 7, title: 'Learning Preferences', desc: 'Hours, format & schedule', optional: false },
@@ -121,6 +130,8 @@ const CompleteProfileWizardModal = () => {
   const currentStepsList =
     role === 'learner'
       ? learnerSteps
+      : isEmployerRole
+      ? employerSteps
       : role === 'institution'
       ? instSubType === 'employer'
         ? employerSteps
@@ -156,42 +167,40 @@ const CompleteProfileWizardModal = () => {
           return 'Please select your preferred learning format.';
         }
       }
+    } else if (isEmployerRole) {
+      if (currentStep === 1) {
+        if (!institutionDraft.name?.trim()) return 'Please enter the Organization Name.';
+        if (!institutionDraft.industry?.trim()) return 'Please specify the Industry Sector.';
+      } else if (currentStep === 2) {
+        if (!institutionDraft.hqCity?.trim()) return 'Please enter the Headquarters City.';
+      } else if (currentStep === 3) {
+        if (!institutionDraft.contactName?.trim()) return 'Please provide the Primary Contact Name.';
+        if (!institutionDraft.contactEmail?.trim()) return 'Please provide an Official Contact Email.';
+      } else if (currentStep === 4) {
+        if (!institutionDraft.hiringRoles || institutionDraft.hiringRoles.length === 0) {
+          return 'Please list at least one primary role you are hiring for.';
+        }
+      } else if (currentStep === 5) {
+        if (!institutionDraft.regNumber?.trim()) return 'Please specify your Business Registration / CIN / GST number.';
+        if (!institutionDraft.acceptedTerms) return 'You must accept the platform verification terms.';
+      }
     } else if (role === 'institution') {
-      if (instSubType === 'employer') {
-        if (currentStep === 1) {
-          if (!institutionDraft.name?.trim()) return 'Please enter the Organization Name.';
-          if (!institutionDraft.industry?.trim()) return 'Please specify the Industry Sector.';
-        } else if (currentStep === 2) {
-          if (!institutionDraft.hqCity?.trim()) return 'Please enter the Headquarters City.';
-        } else if (currentStep === 3) {
-          if (!institutionDraft.contactName?.trim()) return 'Please provide the Primary Contact Name.';
-          if (!institutionDraft.contactEmail?.trim()) return 'Please provide an Official Contact Email.';
-        } else if (currentStep === 4) {
-          if (!institutionDraft.hiringRoles || institutionDraft.hiringRoles.length === 0) {
-            return 'Please list at least one primary role you are hiring for.';
-          }
-        } else if (currentStep === 5) {
-          if (!institutionDraft.regNumber?.trim()) return 'Please specify your Business Registration / CIN / GST number.';
-          if (!institutionDraft.acceptedTerms) return 'You must accept the platform verification terms.';
+      // Training provider
+      if (currentStep === 1) {
+        if (!institutionDraft.name?.trim()) return 'Please enter the Institution Name.';
+        if (!institutionDraft.website?.trim()) return 'Please provide the official website URL.';
+      } else if (currentStep === 2) {
+        if (!institutionDraft.campusCity?.trim()) return 'Please enter the Campus City.';
+      } else if (currentStep === 3) {
+        if (!institutionDraft.adminEmail?.trim()) return 'Please provide the Admin Email.';
+        if (!institutionDraft.contactPerson?.trim()) return 'Please provide Academic Director / Contact Person name.';
+      } else if (currentStep === 5) {
+        if (!institutionDraft.coursesOffered || institutionDraft.coursesOffered.length === 0) {
+          return 'Please add at least one Course / Program offered.';
         }
-      } else {
-        // Training provider
-        if (currentStep === 1) {
-          if (!institutionDraft.name?.trim()) return 'Please enter the Institution Name.';
-          if (!institutionDraft.website?.trim()) return 'Please provide the official website URL.';
-        } else if (currentStep === 2) {
-          if (!institutionDraft.campusCity?.trim()) return 'Please enter the Campus City.';
-        } else if (currentStep === 3) {
-          if (!institutionDraft.adminEmail?.trim()) return 'Please provide the Admin Email.';
-          if (!institutionDraft.contactPerson?.trim()) return 'Please provide Academic Director / Contact Person name.';
-        } else if (currentStep === 5) {
-          if (!institutionDraft.coursesOffered || institutionDraft.coursesOffered.length === 0) {
-            return 'Please add at least one Course / Program offered.';
-          }
-        } else if (currentStep === 6) {
-          if (!institutionDraft.licenseId?.trim()) return 'Please provide your Accreditation / License ID.';
-          if (!institutionDraft.acceptedTerms) return 'You must accept the quality verification terms.';
-        }
+      } else if (currentStep === 6) {
+        if (!institutionDraft.licenseId?.trim()) return 'Please provide your Accreditation / License ID.';
+        if (!institutionDraft.acceptedTerms) return 'You must accept the quality verification terms.';
       }
     } else if (role === 'government') {
       if (currentStep === 1) {
@@ -228,6 +237,8 @@ const CompleteProfileWizardModal = () => {
     // Persist current draft
     if (role === 'learner') {
       updateUserProfile(learnerDraft);
+    } else if (role === 'employer') {
+      updateEmployerProfile(institutionDraft);
     } else if (role === 'institution') {
       updateInstitutionProfile(institutionDraft);
     } else if (role === 'government') {
@@ -258,6 +269,8 @@ const CompleteProfileWizardModal = () => {
   const handleSaveAndExit = () => {
     if (role === 'learner') {
       updateUserProfile(learnerDraft);
+    } else if (role === 'employer') {
+      updateEmployerProfile(institutionDraft);
     } else if (role === 'institution') {
       updateInstitutionProfile(institutionDraft);
     } else if (role === 'government') {
@@ -273,6 +286,8 @@ const CompleteProfileWizardModal = () => {
       updateUserProfile(learnerDraft);
       const entry = saveLearnerProfileToRegistry(learnerDraft);
       setSyncedRegistryEntry(entry);
+    } else if (role === 'employer') {
+      updateEmployerProfile(institutionDraft);
     } else if (role === 'institution') {
       updateInstitutionProfile(institutionDraft);
     } else if (role === 'government') {
@@ -446,18 +461,52 @@ const CompleteProfileWizardModal = () => {
                         className="w-16 h-16 rounded-2xl object-cover border-2 border-[#0F4C47] shadow-sm shrink-0"
                       />
                       <div className="flex-1">
-                        <label className="text-xs font-bold text-slate-700 block mb-1">
-                          Profile Avatar URL
-                        </label>
-                        <input
-                          type="text"
-                          value={learnerDraft.avatar || ''}
-                          onChange={(e) => setLearnerDraft({ ...learnerDraft, avatar: e.target.value })}
-                          placeholder="https://..."
-                          className="w-full text-xs p-2 rounded-xl border border-slate-200 focus:border-[#0F4C47] outline-none"
-                        />
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="text-xs font-bold text-slate-700 block">
+                            Profile Photo / Avatar
+                          </label>
+                          <label
+                            htmlFor="wizard-device-avatar"
+                            className="text-[11px] font-bold text-[#0F4C47] hover:underline flex items-center gap-1 cursor-pointer"
+                          >
+                            <Upload className="w-3 h-3" />
+                            <span>Upload from Device</span>
+                          </label>
+                        </div>
+                        <div className="flex gap-2">
+                          <input
+                            type="text"
+                            value={learnerDraft.avatar || ''}
+                            onChange={(e) => setLearnerDraft({ ...learnerDraft, avatar: e.target.value })}
+                            placeholder="Paste image URL or upload file below..."
+                            className="flex-1 text-xs p-2 rounded-xl border border-slate-200 focus:border-[#0F4C47] outline-none"
+                          />
+                          <label
+                            htmlFor="wizard-device-avatar"
+                            className="px-3 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold flex items-center gap-1.5 cursor-pointer transition-colors shadow-2xs shrink-0"
+                          >
+                            <Camera className="w-3.5 h-3.5" />
+                            <span>Upload Photo</span>
+                          </label>
+                          <input
+                            id="wizard-device-avatar"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onload = (uploadEvt) => {
+                                  setLearnerDraft({ ...learnerDraft, avatar: uploadEvt.target.result });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </div>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-[10px] font-semibold text-slate-500">Quick avatars:</span>
+                          <span className="text-[10px] font-semibold text-slate-500">Or pick preset:</span>
                           {[
                             'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
                             'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
@@ -619,13 +668,25 @@ const CompleteProfileWizardModal = () => {
                 </div>
               )}
 
-              {/* STEP 2: Location & Relocation */}
+              {/* STEP 2: Location (Where you stay) */}
               {currentStep === 2 && (
                 <div className="space-y-4">
+                  <div className="p-3.5 rounded-2xl bg-teal-50/70 border border-teal-200/80 flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-[#0F4C47] text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <MapPin className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-slate-900">Where do you stay? (Current Residence & Location)</h4>
+                      <p className="text-[11px] text-teal-900 font-medium">
+                        Specify your residential location. Educational background & degrees will be completed in the next step.
+                      </p>
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="text-xs font-bold text-slate-700 block mb-1">
-                        Country
+                        Country <span className="text-rose-500">*</span>
                       </label>
                       <input
                         type="text"
@@ -1008,41 +1069,93 @@ const CompleteProfileWizardModal = () => {
                     </div>
 
                     <div className="sm:col-span-2">
-                      <label className="text-xs font-bold text-slate-700 block mb-1">
-                        Target Job Role <span className="text-rose-500">*</span>
-                      </label>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-slate-700 block">
+                          Target Job Role <span className="text-rose-500">*</span>
+                        </label>
+                        <span className="text-[10px] font-semibold text-teal-700">Select listed role or choose Others</span>
+                      </div>
                       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mt-1">
                         {targetRolesCatalog.map((roleTitle) => {
-                          const isSelected =
-                            (learnerDraft.careerProfile?.targetRole === roleTitle) ||
-                            (learnerDraft.career?.targetCareerTitle === roleTitle);
+                          const isOther = roleTitle === 'Other' || roleTitle === 'Others';
+                          const isSelected = isOther
+                            ? (learnerDraft.careerProfile?.targetRole === 'Other' || learnerDraft.careerProfile?.isCustomRole || Boolean(learnerDraft.careerProfile?.customTargetRole))
+                            : (!learnerDraft.careerProfile?.isCustomRole && ((learnerDraft.careerProfile?.targetRole === roleTitle) || (learnerDraft.career?.targetCareerTitle === roleTitle)));
                           return (
                             <button
                               key={roleTitle}
                               type="button"
                               onClick={() => {
-                                setLearnerDraft({
-                                  ...learnerDraft,
-                                  careerProfile: {
-                                    ...(learnerDraft.careerProfile || {}),
-                                    targetRole: roleTitle
-                                  }
-                                });
+                                if (isOther) {
+                                  setLearnerDraft({
+                                    ...learnerDraft,
+                                    careerProfile: {
+                                      ...(learnerDraft.careerProfile || {}),
+                                      targetRole: 'Other',
+                                      isCustomRole: true
+                                    }
+                                  });
+                                } else {
+                                  setLearnerDraft({
+                                    ...learnerDraft,
+                                    targetRole: roleTitle,
+                                    customTargetRole: '',
+                                    careerProfile: {
+                                      ...(learnerDraft.careerProfile || {}),
+                                      targetRole: roleTitle,
+                                      customTargetRole: '',
+                                      isCustomRole: false
+                                    }
+                                  });
+                                }
                               }}
-                              className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all ${
+                              className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer ${
                                 isSelected
-                                  ? 'border-[#0F4C47] bg-teal-50 text-[#0F4C47] ring-2 ring-[#0F4C47]/20'
+                                  ? 'border-[#0F4C47] bg-teal-50 text-[#0F4C47] ring-2 ring-[#0F4C47]/20 shadow-2xs'
                                   : 'border-slate-200 hover:bg-slate-50 text-slate-700'
                               }`}
                             >
                               <div className="flex items-center justify-between">
-                                <span>{roleTitle}</span>
+                                <span>{isOther ? 'Others (Enter Custom)' : roleTitle}</span>
                                 {isSelected && <Check className="w-3.5 h-3.5 text-[#0F4C47]" />}
                               </div>
                             </button>
                           );
                         })}
                       </div>
+
+                      {/* Dynamic input field generated when user clicks Others / custom role */}
+                      {(learnerDraft.careerProfile?.isCustomRole || learnerDraft.careerProfile?.targetRole === 'Other' || Boolean(learnerDraft.careerProfile?.customTargetRole)) && (
+                        <div className="mt-3 p-3.5 bg-teal-50 border border-teal-200 rounded-2xl animate-in fade-in duration-150">
+                          <label className="text-xs font-bold text-[#0F4C47] block mb-1">
+                            Enter Your Target Career Role Manually <span className="text-rose-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            value={learnerDraft.careerProfile?.customTargetRole || (learnerDraft.careerProfile?.targetRole !== 'Other' ? learnerDraft.careerProfile?.targetRole : '') || ''}
+                            onChange={(e) => {
+                              const val = e.target.value;
+                              setLearnerDraft({
+                                ...learnerDraft,
+                                targetRole: val,
+                                customTargetRole: val,
+                                careerProfile: {
+                                  ...(learnerDraft.careerProfile || {}),
+                                  targetRole: val || 'Other',
+                                  customTargetRole: val,
+                                  isCustomRole: true
+                                }
+                              });
+                            }}
+                            placeholder="e.g. AI Prompt Engineer, Cyber Threat Analyst, Cloud DevOps Specialist..."
+                            className="w-full text-xs p-2.5 rounded-xl border border-teal-300 focus:border-[#0F4C47] outline-none font-semibold bg-white text-slate-800 shadow-2xs"
+                            autoFocus
+                          />
+                          <p className="text-[10px] text-teal-800 mt-1">
+                            Your custom target role will be recorded in your profile and matched against job recommendations and learning paths.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div>
@@ -1645,9 +1758,9 @@ const CompleteProfileWizardModal = () => {
           {/* ======================================================== */}
           {/* INSTITUTION STEPS: Employer & Training Provider          */}
           {/* ======================================================== */}
-          {role === 'institution' && (
+          {(isEmployerRole || role === 'institution') && (
             <>
-              {instSubType === 'employer' ? (
+              {(role === 'employer' || instSubType === 'employer') ? (
                 /* EMPLOYER WIZARD */
                 <>
                   {currentStep === 1 && (
@@ -2618,84 +2731,131 @@ const CompleteProfileWizardModal = () => {
               Your profile has been written and saved into the central backend registry. It is now instantly accessible on the <strong className="text-teal-900">Institution Portal</strong> and <strong className="text-teal-900">Government/Private Dashboard</strong> for candidate tracking and hiring.
             </p>
 
-            {/* LIVE BACKEND EXCEL SHEET PREVIEW CARD */}
-            <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-[#107C41] text-white flex items-center justify-center text-xs font-black shadow-xs">
-                    X
+            {/* LIVE BACKEND SUMMARY CARD */}
+            {role === 'employer' ? (
+              <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-xl bg-[#0F4C47] text-white flex items-center justify-center font-bold shadow-xs">
+                      <Briefcase className="w-4 h-4 text-teal-200" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-xs text-slate-900 block">
+                        {institutionDraft.name || 'Corporate Entity'}
+                      </span>
+                      <span className="text-[10px] text-slate-500 block">
+                        Status: <span className="text-emerald-700 font-bold">100% VERIFIED EMPLOYER ENTITY</span> • CIN / GST: <span className="font-mono text-teal-800 font-bold">{institutionDraft.regNumber || 'CIN: U72200PN2017PTC172890'}</span>
+                      </span>
+                    </div>
                   </div>
-                  <div>
-                    <span className="font-bold text-xs text-slate-900">
-                      Candidate_Profiles_Master_Registry.xlsx
-                    </span>
-                    <span className="text-[10px] text-slate-400 block font-normal">
-                      Sheet: <span className="font-mono text-teal-800 font-bold">Learner_Registry_2026</span> • Status: <span className="text-emerald-700 font-bold">SAVED & SYNCED</span>
-                    </span>
+                  <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold tracking-wide uppercase self-start sm:self-auto">
+                    Active Hiring Partner ✓
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 mt-3 text-xs">
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Headquarters</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{institutionDraft.hqCity || 'Pune'}, {institutionDraft.hqState || 'Maharashtra'}</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Talent Officer</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{institutionDraft.contactName || 'Anand Kulkarni'}</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Roles Hiring</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{institutionDraft.hiringRoles?.length || 0} Open Roles</div>
+                  </div>
+                  <div className="p-2.5 rounded-xl bg-white border border-slate-200 shadow-xs">
+                    <div className="text-[10px] text-slate-400 font-semibold uppercase">Key In-Demand Skills</div>
+                    <div className="font-bold text-slate-800 text-xs mt-0.5">{institutionDraft.keySkillsInDemand?.length || 0} Core Skills</div>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => exportRegistryToCSV()}
-                  className="px-3 py-1.5 rounded-xl bg-[#107C41] hover:bg-[#0D6535] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 hover:scale-[1.02] self-start sm:self-auto"
-                  title="Download complete registry as an Excel spreadsheet file (.csv format)"
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>Download Excel Sheet (.csv)</span>
-                </button>
+                <div className="mt-3 text-[10px] text-slate-500 flex items-center justify-between">
+                  <span>Candidate applicants will see verified badge on your job postings.</span>
+                  <span className="text-teal-800 font-semibold">Ready for Talent Discovery & ATS Pipeline</span>
+                </div>
               </div>
+            ) : (
+              <div className="mt-4 p-4 rounded-2xl bg-slate-50 border border-slate-200 text-left">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2.5 border-b border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-[#107C41] text-white flex items-center justify-center text-xs font-black shadow-xs">
+                      X
+                    </div>
+                    <div>
+                      <span className="font-bold text-xs text-slate-900">
+                        Candidate_Profiles_Master_Registry.xlsx
+                      </span>
+                      <span className="text-[10px] text-slate-400 block font-normal">
+                        Sheet: <span className="font-mono text-teal-800 font-bold">Learner_Registry_2026</span> • Status: <span className="text-emerald-700 font-bold">SAVED & SYNCED</span>
+                      </span>
+                    </div>
+                  </div>
 
-              {/* Excel Table row preview */}
-              <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white">
-                <table className="w-full text-left text-[11px]">
-                  <thead>
-                    <tr className="bg-[#107C41]/10 border-b border-slate-200 text-slate-700 font-bold">
-                      <th className="p-2 font-mono">Candidate ID</th>
-                      <th className="p-2">Name</th>
-                      <th className="p-2">Email</th>
-                      <th className="p-2">Location</th>
-                      <th className="p-2">Education / Institution</th>
-                      <th className="p-2">Target Industry</th>
-                      <th className="p-2">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
-                    <tr className="bg-emerald-50/50">
-                      <td className="p-2 font-mono font-bold text-teal-800">
-                        {syncedRegistryEntry?.id || 'REG-2026-005'}
-                      </td>
-                      <td className="p-2 font-bold text-slate-900">
-                        {syncedRegistryEntry?.name || learnerDraft.name || 'Rohan Sharma'}
-                      </td>
-                      <td className="p-2 text-slate-500 font-mono text-[10px]">
-                        {syncedRegistryEntry?.email || learnerDraft.email || 'rohan.sharma@skillfarming.org'}
-                      </td>
-                      <td className="p-2">
-                        {syncedRegistryEntry?.city || learnerDraft.city || 'Bengaluru'}, {syncedRegistryEntry?.state || learnerDraft.state || 'Karnataka'}
-                      </td>
-                      <td className="p-2">
-                        <div>{syncedRegistryEntry?.education || learnerDraft.educations?.[0]?.degree || 'B.Tech CS'}</div>
-                        <div className="text-[10px] text-slate-400">{syncedRegistryEntry?.institution || 'Govt Engineering College'}</div>
-                      </td>
-                      <td className="p-2 text-teal-900 font-semibold">
-                        {syncedRegistryEntry?.targetIndustry || learnerDraft.careerProfile?.targetIndustry || 'IT & Software'}
-                      </td>
-                      <td className="p-2">
-                        <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
-                          Synced ✓
-                        </span>
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
+                  <button
+                    type="button"
+                    onClick={() => exportRegistryToCSV()}
+                    className="px-3 py-1.5 rounded-xl bg-[#107C41] hover:bg-[#0D6535] text-white text-xs font-bold transition-all shadow-xs flex items-center gap-1.5 hover:scale-[1.02] self-start sm:self-auto"
+                    title="Download complete registry as an Excel spreadsheet file (.csv format)"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                    <span>Download Excel Sheet (.csv)</span>
+                  </button>
+                </div>
 
-              <div className="mt-2 text-[10px] text-slate-500 flex items-center justify-between">
-                <span>Total records in central registry: <strong className="text-slate-800">{learnerProfilesRegistry.length + 1} profiles</strong></span>
-                <span className="text-teal-800 font-semibold">Ready for Institution & Government audit</span>
+                {/* Excel Table row preview */}
+                <div className="mt-3 overflow-x-auto rounded-xl border border-slate-200 bg-white">
+                  <table className="w-full text-left text-[11px]">
+                    <thead>
+                      <tr className="bg-[#107C41]/10 border-b border-slate-200 text-slate-700 font-bold">
+                        <th className="p-2 font-mono">Candidate ID</th>
+                        <th className="p-2">Name</th>
+                        <th className="p-2">Email</th>
+                        <th className="p-2">Location</th>
+                        <th className="p-2">Education / Institution</th>
+                        <th className="p-2">Target Industry</th>
+                        <th className="p-2">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                      <tr className="bg-emerald-50/50">
+                        <td className="p-2 font-mono font-bold text-teal-800">
+                          {syncedRegistryEntry?.id || 'REG-2026-005'}
+                        </td>
+                        <td className="p-2 font-bold text-slate-900">
+                          {syncedRegistryEntry?.name || learnerDraft.name || 'Rohan Sharma'}
+                        </td>
+                        <td className="p-2 text-slate-500 font-mono text-[10px]">
+                          {syncedRegistryEntry?.email || learnerDraft.email || 'rohan.sharma@skillfarming.org'}
+                        </td>
+                        <td className="p-2">
+                          {syncedRegistryEntry?.city || learnerDraft.city || 'Bengaluru'}, {syncedRegistryEntry?.state || learnerDraft.state || 'Karnataka'}
+                        </td>
+                        <td className="p-2">
+                          <div>{syncedRegistryEntry?.education || learnerDraft.educations?.[0]?.degree || 'B.Tech CS'}</div>
+                          <div className="text-[10px] text-slate-400">{syncedRegistryEntry?.institution || 'Govt Engineering College'}</div>
+                        </td>
+                        <td className="p-2 text-teal-900 font-semibold">
+                          {syncedRegistryEntry?.targetIndustry || learnerDraft.careerProfile?.targetIndustry || 'IT & Software'}
+                        </td>
+                        <td className="p-2">
+                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px]">
+                            Synced ✓
+                          </span>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="mt-2 text-[10px] text-slate-500 flex items-center justify-between">
+                  <span>Total records in central registry: <strong className="text-slate-800">{learnerProfilesRegistry.length + 1} profiles</strong></span>
+                  <span className="text-teal-800 font-semibold">Ready for Institution & Government audit</span>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="mt-5 flex flex-col sm:flex-row items-center justify-end gap-2.5">
               <button
@@ -2704,6 +2864,7 @@ const CompleteProfileWizardModal = () => {
                   setIsCompletedModalOpen(false);
                   closeProfileWizard();
                   if (role === 'learner') setActiveTab('dashboard');
+                  else if (role === 'employer') setActiveTab('employer');
                   else if (role === 'institution') setActiveTab('institution');
                   else if (role === 'government') setActiveTab('government');
                 }}

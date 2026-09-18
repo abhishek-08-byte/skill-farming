@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../../context/AppContext';
-import { Search, Bell, CheckCircle, ArrowRight, User, Shield, Building, Award, LogOut } from 'lucide-react';
+import { Search, Bell, CheckCircle, ArrowRight, User, Shield, Building, Award, LogOut, Briefcase } from 'lucide-react';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 
 export const Header = () => {
   const {
@@ -12,67 +13,99 @@ export const Header = () => {
     notifications,
     currentProfileCompletion,
     openProfileWizard,
-    logoutUser
+    logoutUser,
+    t
   } = useApp();
 
   const [showNotifs, setShowNotifs] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   return (
-    <header className="bg-white border-b border-[#E5EFEA] px-4 sm:px-6 py-3 sticky top-0 z-30 flex items-center justify-between gap-4">
-      {/* Search Bar - matching reference UI */}
-      <div className="flex-1 max-w-xl">
-        <div className="relative">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search courses, skills, assessments, batches..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full bg-[#F5F8F7] hover:bg-[#EDF3F0] focus:bg-white text-sm text-slate-800 placeholder-slate-400 pl-10 pr-4 py-2 rounded-xl border border-transparent focus:border-[#0F4C47] outline-none transition-all"
-          />
-        </div>
-      </div>
-
-      {/* Role Badge, Profile Controls & Sign Out */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Active Role Indicator Badge (Role slider removed per user request) */}
-        <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-[#0F4C47] text-xs font-extrabold shadow-xs shrink-0">
-          {currentRole === 'learner' && <User className="w-3.5 h-3.5 text-teal-600" />}
-          {currentRole === 'institution' && <Building className="w-3.5 h-3.5 text-teal-600" />}
-          {currentRole === 'government' && <Shield className="w-3.5 h-3.5 text-teal-600" />}
-          <span className="capitalize hidden sm:inline">
-            {currentRole === 'learner' ? 'Learner Portal' : currentRole === 'institution' ? 'Institution Portal' : 'Government / Private Portal'}
-          </span>
-          <span className="capitalize sm:hidden text-[10px] font-black">
-            {currentRole === 'learner' ? 'Learner' : currentRole === 'institution' ? 'Institution' : 'Govt / Pvt'}
-          </span>
+    <header className="bg-white border-b border-[#E5EFEA] px-3 sm:px-6 py-2.5 sm:py-3 sticky top-0 z-30 flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2 sm:gap-4 w-full">
+        {/* Mobile Brand (visible when sidebar is hidden) */}
+        <div className="flex items-center gap-2 md:hidden shrink-0">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#0F4C47] to-[#14B8A6] flex items-center justify-center text-white font-black text-sm shadow-xs">
+            🌾
+          </div>
+          <span className="font-black text-xs text-[#0F4C47] tracking-tight">SKILL FARMING</span>
         </div>
 
-        {/* Sign Out / Exit to Home */}
-        <button
-          onClick={logoutUser}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 hover:bg-rose-50/70 transition-all text-xs font-semibold"
-          title="Sign Out to Landing Home"
-        >
-          <LogOut className="w-3.5 h-3.5" />
-          <span className="hidden md:inline">Sign Out</span>
-        </button>
+        {/* Desktop Search Bar */}
+        <div className="hidden sm:block flex-1 max-w-xl">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder={t('search_placeholder', 'Search courses, skills, districts, assessments...')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#F5F8F7] hover:bg-[#EDF3F0] focus:bg-white text-xs sm:text-sm text-slate-800 placeholder-slate-400 pl-10 pr-4 py-2 rounded-xl border border-transparent focus:border-[#0F4C47] outline-none transition-all"
+            />
+          </div>
+        </div>
 
-        {/* Notification Bell with Dropdown */}
-        <div className="relative">
+        {/* Mobile Search Toggle Icon */}
+        <div className="sm:hidden ml-auto">
           <button
-            onClick={() => setShowNotifs(!showNotifs)}
-            className="relative p-2 rounded-xl text-slate-600 hover:bg-[#F0F5F3] transition-colors border border-transparent hover:border-[#DCE8E3]"
-            aria-label="Notifications"
+            onClick={() => setShowMobileSearch(!showMobileSearch)}
+            className="p-2 rounded-xl text-slate-600 hover:bg-slate-100 transition-colors"
+            title="Search"
           >
-            <Bell className="w-5 h-5" />
-            {unreadCount > 0 && (
-              <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#14B8A6] rounded-full ring-2 ring-white"></span>
-            )}
+            <Search className="w-4 h-4" />
           </button>
+        </div>
+
+        {/* Controls: Language Switcher, Role Badge & Sign Out */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Universal Language Switcher */}
+          <LanguageSwitcher />
+
+          {/* Active Role Indicator Badge */}
+          <div className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-teal-50 border border-teal-200 text-[#0F4C47] text-xs font-extrabold shadow-xs shrink-0">
+            {currentRole === 'learner' && <User className="w-3.5 h-3.5 text-teal-600" />}
+            {currentRole === 'institution' && <Building className="w-3.5 h-3.5 text-teal-600" />}
+            {currentRole === 'employer' && <Briefcase className="w-3.5 h-3.5 text-teal-600" />}
+            {currentRole === 'government' && <Shield className="w-3.5 h-3.5 text-teal-600" />}
+            <span className="capitalize hidden sm:inline">
+              {currentRole === 'learner' 
+                ? t('learner_portal', 'Learner Portal') 
+                : currentRole === 'institution' 
+                ? t('institution_portal', 'Institution Portal') 
+                : currentRole === 'employer'
+                ? t('employer_portal', 'Employer Portal')
+                : t('government_portal', 'Government Analytics (Maharashtra)')}
+            </span>
+            <span className="capitalize sm:hidden text-[10px] font-black">
+              {currentRole === 'learner' ? 'Learner' : currentRole === 'institution' ? 'Institution' : currentRole === 'employer' ? 'Employer' : 'Govt MH'}
+            </span>
+          </div>
+
+          {/* Sign Out / Exit to Home */}
+          <button
+            onClick={logoutUser}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-slate-200 hover:border-rose-200 text-slate-600 hover:text-rose-600 hover:bg-rose-50/70 transition-all text-xs font-semibold"
+            title={t('sign_out', 'Sign Out')}
+          >
+            <LogOut className="w-3.5 h-3.5" />
+            <span className="hidden md:inline">{t('sign_out', 'Sign Out')}</span>
+          </button>
+
+          {/* Notification Bell with Dropdown */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifs(!showNotifs)}
+              className="relative p-2 rounded-xl text-slate-600 hover:bg-[#F0F5F3] transition-colors border border-transparent hover:border-[#DCE8E3]"
+              aria-label={t('notifications', 'Notifications')}
+            >
+              <Bell className="w-5 h-5" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-[#14B8A6] rounded-full ring-2 ring-white"></span>
+              )}
+            </button>
 
           {/* Notifications Dropdown */}
           {showNotifs && (
@@ -168,18 +201,40 @@ export const Header = () => {
                 ? currentUser.name
                 : currentRole === 'institution'
                 ? 'Apex Academy Admin'
-                : 'State Mission Director'}
+                : currentRole === 'employer'
+                ? 'Anand Kulkarni (InfraCloud)'
+                : 'Dr. Rajeshwari Patil, IAS'}
             </div>
             <div className="text-[11px] text-slate-500 leading-tight">
               {currentRole === 'learner'
                 ? currentUser.email
                 : currentRole === 'institution'
                 ? 'director@apextech.org'
+                : currentRole === 'employer'
+                ? 'talent@infracloud.io'
                 : 'governance@skillmission.gov.in'}
             </div>
           </div>
         </button>
       </div>
+    </div>
+
+      {/* Expandable Mobile Search Field */}
+      {showMobileSearch && (
+        <div className="sm:hidden w-full pt-1 pb-1 animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="relative">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <input
+              type="text"
+              placeholder="Search courses, skills, assessments..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full bg-[#F5F8F7] focus:bg-white text-xs text-slate-800 placeholder-slate-400 pl-9 pr-3 py-2 rounded-xl border border-slate-200 focus:border-[#0F4C47] outline-none"
+              autoFocus
+            />
+          </div>
+        </div>
+      )}
     </header>
   );
 };

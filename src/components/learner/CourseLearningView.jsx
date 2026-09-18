@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 
 export const CourseLearningView = ({ course, onBack }) => {
-  const { updateCourseProgress, getEnrollmentProgress } = useApp();
+  const { updateCourseProgress, getEnrollmentProgress, currentUser } = useApp();
 
   // 2 Functional, high-reliability demonstration video streams
   const playlist = [
@@ -55,13 +55,16 @@ export const CourseLearningView = ({ course, onBack }) => {
 
   // Initial progress sync
   useEffect(() => {
-    const existingProg = getEnrollmentProgress(course.id);
+    const existingProg = (typeof getEnrollmentProgress === 'function' && course?.id)
+      ? getEnrollmentProgress(course.id)
+      : (currentUser?.activeCourses?.find(ac => ac.courseId === course?.id)?.progress || 0);
+
     if (existingProg >= 100) {
       setCompletedVideos({ 'vid-1': true, 'vid-2': true });
     } else if (existingProg >= 50) {
       setCompletedVideos({ 'vid-1': true });
     }
-  }, [course.id, getEnrollmentProgress]);
+  }, [course?.id, getEnrollmentProgress, currentUser]);
 
   // Video event handlers
   const handleTimeUpdate = () => {

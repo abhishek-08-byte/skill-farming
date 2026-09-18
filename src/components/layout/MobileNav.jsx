@@ -17,8 +17,12 @@ import {
   Settings,
   LogOut,
   RotateCcw,
-  Sparkles
+  Sparkles,
+  Trophy,
+  AlertCircle
 } from 'lucide-react';
+
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 
 export const MobileNav = ({ onOpenAssessment }) => {
   const {
@@ -29,32 +33,36 @@ export const MobileNav = ({ onOpenAssessment }) => {
     logoutUser,
     resetDemoData,
     openProfileWizard,
-    currentProfileCompletion
+    currentProfileCompletion,
+    t
   } = useApp();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   // Role-adaptive mobile navigation tabs
   const learnerTabs = [
-    { id: 'dashboard', label: 'Home', icon: LayoutGrid },
-    { id: 'assessment', label: 'Assess', icon: CheckCircle, isAction: true },
-    { id: 'analytics', label: 'Skill Gap', icon: TrendingUp },
-    { id: 'course', label: 'Learning', icon: BookOpen },
-    { id: 'employment', label: 'Outcome', icon: Briefcase },
+    { id: 'dashboard', label: t('nav_dashboard', 'Home'), icon: LayoutGrid },
+    { id: 'jobs', label: t('nav_jobs', 'Jobs'), icon: Briefcase },
+    { id: 'assessment', label: t('start_assessment', 'Assess'), icon: CheckCircle, isAction: true },
+    { id: 'analytics', label: t('nav_analytics', 'Skill Gap'), icon: TrendingUp },
+    { id: 'course', label: t('nav_courses', 'Learning'), icon: BookOpen },
   ];
 
   const institutionTabs = [
-    { id: 'institution', label: 'Batches', icon: Building },
-    { id: 'institution-students', label: 'Students', icon: BookOpen },
-    { id: 'institution-attendance', label: 'Attendance', icon: CalendarDays },
-    { id: 'institution-registry', label: 'Excel Sheet', icon: FileSpreadsheet },
+    { id: 'institution', label: t('nav_batches', 'Batches'), icon: Building },
+    { id: 'institution-students', label: t('nav_students', 'Students'), icon: BookOpen },
+    { id: 'institution-attendance', label: t('nav_attendance', 'Attendance'), icon: CalendarDays },
+    { id: 'institution-registry', label: t('nav_excel_registry', 'Excel Sheet'), icon: FileSpreadsheet },
+  ];
+
+  const employerTabs = [
+    { id: 'employer', label: t('nav_recruiter_hub', 'ATS Hub'), icon: Briefcase },
+    { id: 'settings', label: t('nav_settings', 'Recruiter Profile'), icon: Settings },
   ];
 
   const governmentTabs = [
-    { id: 'government', label: 'Overview', icon: Shield },
-    { id: 'government-private', label: 'Private', icon: Building },
-    { id: 'government-tracking', label: 'Tracking', icon: Users },
-    { id: 'government-registry', label: 'Excel Reg', icon: FileSpreadsheet },
+    { id: 'government', label: t('nav_govt_overview', 'Overview'), icon: Shield },
+    { id: 'settings', label: t('nav_settings', 'State Profile'), icon: Settings },
   ];
 
   const navItems =
@@ -62,6 +70,8 @@ export const MobileNav = ({ onOpenAssessment }) => {
       ? learnerTabs
       : currentRole === 'institution'
       ? institutionTabs
+      : currentRole === 'employer'
+      ? employerTabs
       : governmentTabs;
 
   return (
@@ -145,6 +155,12 @@ export const MobileNav = ({ onOpenAssessment }) => {
               </button>
             </div>
 
+            {/* Language Selector in Drawer */}
+            <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-200">
+              <span className="text-xs font-bold text-slate-700">{t('language', 'Language / भाषा')}:</span>
+              <LanguageSwitcher />
+            </div>
+
             {/* Profile Completion Card in Drawer */}
             <div
               onClick={() => {
@@ -169,8 +185,60 @@ export const MobileNav = ({ onOpenAssessment }) => {
               </span>
             </div>
 
+            {/* If Learner is Inactive / Masked, show dedicated Get Back on Track Callout */}
+            {currentRole === 'learner' && currentUser?.leaderboardStatus !== 'ACTIVE' && (
+              <div
+                onClick={() => {
+                  setIsDrawerOpen(false);
+                  setActiveTab('masking');
+                }}
+                className="p-3.5 rounded-2xl bg-amber-50 border border-amber-300 flex items-center justify-between cursor-pointer animate-pulse"
+              >
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-5 h-5 text-amber-700" />
+                  <div>
+                    <div className="text-xs font-black text-amber-900">
+                      Get Back on Track
+                    </div>
+                    <div className="text-[11px] text-amber-800">
+                      Skill recovery challenges waiting • Tap to resume
+                    </div>
+                  </div>
+                </div>
+                <span className="text-xs font-bold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-lg">
+                  Resume →
+                </span>
+              </div>
+            )}
+
             {/* Navigation Options List */}
             <div className="space-y-1 text-xs font-bold text-slate-700">
+              {currentRole === 'learner' && (
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    setActiveTab('leaderboard');
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-slate-800"
+                >
+                  <Trophy className="w-4 h-4 text-amber-600" />
+                  <span>Student Leaderboard</span>
+                </button>
+              )}
+
+              {currentRole === 'learner' && (
+                <button
+                  onClick={() => {
+                    setIsDrawerOpen(false);
+                    setActiveTab('masking');
+                  }}
+                  className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors text-teal-900"
+                >
+                  <Sparkles className="w-4 h-4 text-teal-600" />
+                  <span>Get Back on Track (Recovery Hub)</span>
+                </button>
+              )}
+
               <button
                 onClick={() => {
                   setIsDrawerOpen(false);

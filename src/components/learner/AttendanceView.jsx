@@ -6,14 +6,20 @@ export const AttendanceView = () => {
   const { currentUser } = useApp();
   const summary = currentUser.attendanceSummary || { overallPercentage: 80, presentSessions: 40, totalSessions: 50 };
 
-  const sessionLogs = [
+  const userTargetRole = currentUser?.customTargetRole || currentUser?.targetRole || 'Software Developer';
+  const isElectricalRole = userTargetRole.toLowerCase().includes('electrical') || userTargetRole.toLowerCase().includes('electrician');
+
+  const allSessionLogs = [
     { date: '25 Apr 2026', course: 'Advanced SQL & Database Architecture', session: 'Session 32: B-Tree Indexes', status: 'Present', mode: 'Offline' },
     { date: '23 Apr 2026', course: 'Applied Data Structures', session: 'Session 28: Graph Cycle DFS', status: 'Present', mode: 'Online' },
-    { date: '21 Apr 2026', course: 'Industrial Electrical Maintenance', session: 'Session 18: Star-Delta Interlocks', status: 'Present', mode: 'Offline' },
+    { date: '21 Apr 2026', course: 'Industrial Electrical Maintenance', session: 'Session 18: Star-Delta Interlocks', status: 'Present', mode: 'Offline', isElec: true },
     { date: '19 Apr 2026', course: 'Advanced SQL & Database Architecture', session: 'Session 30: MVCC Isolation', status: 'Absent', mode: 'Offline', reason: 'Medical leave' },
     { date: '17 Apr 2026', course: 'Applied Data Structures', session: 'Session 26: Sliding Window Optimization', status: 'Present', mode: 'Online' },
-    { date: '15 Apr 2026', course: 'Industrial Electrical Maintenance', session: 'Session 16: Thermal Overload Relays', status: 'Present', mode: 'Offline' },
+    { date: '15 Apr 2026', course: 'Industrial Electrical Maintenance', session: 'Session 16: Thermal Overload Relays', status: 'Present', mode: 'Offline', isElec: true },
+    { date: '12 Apr 2026', course: 'Modern Full-Stack Web Development', session: 'Session 14: REST API Design & Node', status: 'Present', mode: 'Online' },
   ];
+
+  const sessionLogs = allSessionLogs.filter(log => isElectricalRole ? true : !log.isElec);
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 md:pb-6 animate-in fade-in duration-200">
@@ -59,10 +65,12 @@ export const AttendanceView = () => {
         </div>
       </div>
 
-      {/* Session Log Table */}
-      <div className="farming-card p-6">
+      {/* Session Log Table (Desktop / Tablet sm+) */}
+      <div className="farming-card p-4 sm:p-6">
         <h3 className="font-bold text-base text-slate-900 mb-3">Recent Class Sessions</h3>
-        <div className="overflow-x-auto">
+        
+        {/* Desktop Table View */}
+        <div className="hidden sm:block overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px]">
@@ -95,6 +103,33 @@ export const AttendanceView = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card Stack (< sm) */}
+        <div className="sm:hidden space-y-2.5">
+          {sessionLogs.map((log, idx) => (
+            <div key={idx} className="p-3 bg-[#F8FAF9] rounded-xl border border-slate-200/70 text-xs">
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="font-bold text-slate-900">{log.course}</div>
+                  <div className="text-slate-500 text-[11px] mt-0.5">{log.session}</div>
+                </div>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                    log.status === 'Present'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-rose-100 text-rose-800'
+                  }`}
+                >
+                  {log.status}
+                </span>
+              </div>
+              <div className="flex items-center justify-between text-[11px] text-slate-400 mt-2 pt-2 border-t border-slate-200/50">
+                <span>{log.date}</span>
+                <span className="font-medium text-slate-600">{log.mode} Session</span>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>

@@ -36,8 +36,15 @@ export const CourseCatalog = () => {
   const [selectedCourseDetail, setSelectedCourseDetail] = useState(null);
   const [activeLearningCourse, setActiveLearningCourse] = useState(null);
 
+  const userTargetRole = currentUser?.customTargetRole || currentUser?.targetRole || 'Software Developer';
+  const isElectricalRole = userTargetRole.toLowerCase().includes('electrical') || userTargetRole.toLowerCase().includes('electrician');
+
   // Filter courses
   const filteredCourses = courses.filter((c) => {
+    // If not electrical role, omit electrical courses completely
+    if (!isElectricalRole && (c.skillId === 'electrical' || c.skill === 'Electrical Works')) {
+      return false;
+    }
     const matchesSearch =
       c.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -118,10 +125,10 @@ export const CourseCatalog = () => {
             onChange={(e) => setSkillFilter(e.target.value)}
             className="bg-[#F5F8F7] border border-[#DCE8E3] rounded-xl px-2.5 py-1.5 font-semibold text-slate-800 outline-none cursor-pointer"
           >
-            <option value="All">All 3 Skills</option>
-            <option value="DBMS">DBMS</option>
-            <option value="DSA">DSA</option>
-            <option value="Electrical Works">Electrical Works</option>
+            <option value="All">All Domains</option>
+            <option value="DBMS">DBMS & SQL</option>
+            <option value="DSA">DSA Logic</option>
+            {isElectricalRole && <option value="Electrical Works">Electrical Works</option>}
           </select>
         </div>
 
@@ -205,6 +212,18 @@ export const CourseCatalog = () => {
                   )}
                 </div>
 
+                {/* 100% Free Course Badge & Persistent Enrollment ID */}
+                <div className="mt-2.5 flex items-center justify-between text-[11px]">
+                  <span className="font-extrabold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                    ✓ 100% Free • Sponsored
+                  </span>
+                  {enrolled && (
+                    <span className="font-mono text-[10px] text-teal-800 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-200 font-bold">
+                      ID: {currentUser.activeCourses?.find(ac => ac.courseId === course.id)?.enrollmentId || 'ENR-2026-ACTIVE'}
+                    </span>
+                  )}
+                </div>
+
                 {/* Enrolled Progress Bar */}
                 {enrolled && (
                   <div className="mt-4 p-2.5 rounded-xl bg-[#E2F1ED]/50 border border-[#DCE8E3]">
@@ -248,7 +267,7 @@ export const CourseCatalog = () => {
                     className="px-4 py-2 rounded-xl bg-[#0F4C47] hover:bg-[#0A3632] text-white text-xs font-bold transition-all flex items-center gap-1.5 shadow-xs hover:scale-[1.02]"
                   >
                     <BookOpen className="w-3.5 h-3.5" />
-                    <span>ENROLL NOW</span>
+                    <span>FREE ENROLLMENT</span>
                   </button>
                 )}
               </div>
