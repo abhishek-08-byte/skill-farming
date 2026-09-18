@@ -835,27 +835,40 @@ export const EmployerPortal = () => {
       {/* POST NEW OPENING MODAL */}
       {/* ========================================================= */}
       {isPostModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm overflow-y-auto">
-          <div className="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-2xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm overflow-y-auto">
+          <div className="relative w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden my-6" style={{backgroundColor: '#ffffff'}}>
             
-            <div className="p-5 bg-gradient-to-r from-teal-800 to-slate-900 text-white flex items-center justify-between">
+            {/* Header */}
+            <div className="p-5 flex items-center justify-between" style={{background: 'linear-gradient(to right, #0f766e, #1e293b)'}}>
               <div>
-                <span className="text-xs uppercase tracking-wider text-teal-300 font-bold">New Role Publication</span>
-                <h3 className="text-base font-bold text-white">Create Enterprise Opportunity</h3>
+                <span className="text-xs uppercase tracking-wider font-bold" style={{color: '#5eead4'}}>New Role Publication</span>
+                <h3 className="text-base font-bold" style={{color: '#ffffff'}}>Create Enterprise Opportunity</h3>
               </div>
               <button
-                onClick={() => setIsPostModalOpen(false)}
-                className="p-1 rounded-lg text-white/70 hover:text-white"
+                type="button"
+                onClick={() => { setIsPostModalOpen(false); setNewJobForm({ ...BLANK_JOB_FORM }); }}
+                className="p-1.5 rounded-lg transition-colors"
+                style={{color: 'rgba(255,255,255,0.7)'}}
+                onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                onMouseLeave={e => e.currentTarget.style.color='rgba(255,255,255,0.7)'}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form onSubmit={handlePostJob} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs">
+            {/* Form — pure white card, always readable */}
+            <form onSubmit={handlePostJob} className="p-6 space-y-4 max-h-[75vh] overflow-y-auto text-xs" style={{backgroundColor: '#ffffff', color: '#1e293b'}}>
+
+              {/* Shared input style */}
+              {(() => {
+                const cls = "w-full p-2.5 rounded-xl border outline-none font-medium";
+                const sty = {backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1', fontSize: '12px'};
+                return null;
+              })()}
 
               {/* Job Title */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Title <span className="text-rose-500">*</span></label>
+                <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Job Title <span style={{color:'#ef4444'}}>*</span></label>
                 <input
                   type="text"
                   required
@@ -863,18 +876,20 @@ export const EmployerPortal = () => {
                   value={newJobForm.title}
                   onChange={(e) => setNewJobForm({ ...newJobForm, title: e.target.value })}
                   placeholder="e.g. Junior Backend Engineer / Cloud Systems Architect"
-                  className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 focus:border-teal-500 outline-none font-medium placeholder:text-slate-400"
+                  className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                  style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                 />
               </div>
 
               {/* Category + Employment Type */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Job Category</label>
+                  <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Job Category</label>
                   <select
                     value={newJobForm.category}
                     onChange={(e) => setNewJobForm({ ...newJobForm, category: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium"
+                    className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                    style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                   >
                     <option value="Software & Cloud">Software & Cloud</option>
                     <option value="Data & AI">Data & AI / ML</option>
@@ -889,11 +904,12 @@ export const EmployerPortal = () => {
                   </select>
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Employment Type</label>
+                  <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Employment Type</label>
                   <select
                     value={newJobForm.employmentType}
                     onChange={(e) => setNewJobForm({ ...newJobForm, employmentType: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium"
+                    className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                    style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                   >
                     <option value="Full-time">Full-time</option>
                     <option value="Part-time">Part-time</option>
@@ -908,23 +924,25 @@ export const EmployerPortal = () => {
               {/* Salary + Experience */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Salary Range <span className="text-rose-500">*</span></label>
+                  <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Salary Range <span style={{color:'#ef4444'}}>*</span></label>
                   <input
                     type="text"
                     required
                     value={newJobForm.salaryRange}
                     onChange={(e) => setNewJobForm({ ...newJobForm, salaryRange: e.target.value })}
                     placeholder="e.g. ₹6.0 – ₹8.5 LPA"
-                    className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium placeholder:text-slate-400"
+                    className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                    style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Experience Level <span className="text-rose-500">*</span></label>
+                  <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Experience Level <span style={{color:'#ef4444'}}>*</span></label>
                   <select
                     required
                     value={newJobForm.experienceLevel}
                     onChange={(e) => setNewJobForm({ ...newJobForm, experienceLevel: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium"
+                    className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                    style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                   >
                     <option value="">-- Select Level --</option>
                     <option value="Fresher (0 yrs)">Fresher (0 yrs)</option>
@@ -940,22 +958,24 @@ export const EmployerPortal = () => {
               {/* Location + Work Mode */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Location <span className="text-rose-500">*</span></label>
+                  <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Location <span style={{color:'#ef4444'}}>*</span></label>
                   <input
                     type="text"
                     required
                     value={newJobForm.location}
                     onChange={(e) => setNewJobForm({ ...newJobForm, location: e.target.value })}
                     placeholder="e.g. Pune, Maharashtra"
-                    className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium placeholder:text-slate-400"
+                    className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                    style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                   />
                 </div>
                 <div>
-                  <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Work Mode</label>
+                  <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Work Mode</label>
                   <select
                     value={newJobForm.workMode || 'Hybrid'}
                     onChange={(e) => setNewJobForm({ ...newJobForm, workMode: e.target.value })}
-                    className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium"
+                    className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                    style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                   >
                     <option value="Hybrid">Hybrid</option>
                     <option value="On-site">On-site / Office</option>
@@ -967,79 +987,90 @@ export const EmployerPortal = () => {
 
               {/* Required Skills */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Required Skills <span className="text-rose-500">*</span> <span className="font-normal text-slate-400">(comma separated)</span></label>
+                <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Required Skills <span style={{color:'#ef4444'}}>*</span> <span className="font-normal" style={{color:'#94a3b8'}}>(comma separated)</span></label>
                 <input
                   type="text"
                   required
                   value={newJobForm.requiredSkills}
                   onChange={(e) => setNewJobForm({ ...newJobForm, requiredSkills: e.target.value })}
                   placeholder="e.g. DBMS, DSA, REST API, Python, PostgreSQL"
-                  className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium placeholder:text-slate-400"
+                  className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                  style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                 />
               </div>
 
               {/* Eligibility */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Eligibility Criteria</label>
+                <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Eligibility Criteria</label>
                 <input
                   type="text"
                   value={newJobForm.eligibility}
                   onChange={(e) => setNewJobForm({ ...newJobForm, eligibility: e.target.value })}
                   placeholder="e.g. B.Tech / MCA or equivalent with skill credentials"
-                  className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium placeholder:text-slate-400"
+                  className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                  style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                 />
               </div>
 
               {/* Role Description */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Role Description</label>
+                <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Role Description</label>
                 <textarea
                   rows={3}
                   value={newJobForm.description}
                   onChange={(e) => setNewJobForm({ ...newJobForm, description: e.target.value })}
                   placeholder="Describe the role responsibilities, tech stack, team structure and growth opportunities..."
-                  className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium placeholder:text-slate-400 resize-none"
-                />
-              </div>
-
-              {/* Corporate Benchmark Toggle */}
-              <div className="p-3 bg-teal-50 dark:bg-teal-950/40 border border-teal-200 dark:border-teal-900 rounded-xl flex items-center justify-between gap-3">
-                <div>
-                  <div className="font-bold text-teal-900 dark:text-teal-200">Require Automated Corporate Benchmark</div>
-                  <div className="text-[11px] text-teal-700 dark:text-teal-400 mt-0.5">Shortlisted candidates will take the SQL & Algorithm simulation before interview</div>
-                </div>
-                <input
-                  type="checkbox"
-                  checked={newJobForm.corporateExamRequired}
-                  onChange={(e) => setNewJobForm({ ...newJobForm, corporateExamRequired: e.target.checked })}
-                  className="w-5 h-5 text-teal-600 rounded focus:ring-teal-500 accent-teal-600 cursor-pointer shrink-0"
+                  className="w-full p-2.5 rounded-xl border outline-none font-medium resize-none"
+                  style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
                 />
               </div>
 
               {/* Application Deadline */}
               <div>
-                <label className="block font-semibold text-slate-700 dark:text-slate-300 mb-1.5">Application Deadline</label>
+                <label className="block font-bold mb-1.5" style={{color: '#334155'}}>Application Deadline</label>
                 <input
                   type="date"
                   value={newJobForm.applicationDeadline}
                   onChange={(e) => setNewJobForm({ ...newJobForm, applicationDeadline: e.target.value })}
-                  className="w-full p-2.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 border border-slate-300 dark:border-slate-600 rounded-xl focus:ring-2 focus:ring-teal-500 outline-none font-medium"
+                  className="w-full p-2.5 rounded-xl border outline-none font-medium"
+                  style={{backgroundColor: '#f8fafc', color: '#0f172a', borderColor: '#cbd5e1'}}
+                />
+              </div>
+
+              {/* Corporate Benchmark Toggle */}
+              <div className="p-3 rounded-xl flex items-center justify-between gap-3" style={{backgroundColor: '#f0fdfa', border: '1px solid #99f6e4'}}>
+                <div>
+                  <div className="font-bold" style={{color: '#0f4c47'}}>Require Automated Corporate Benchmark</div>
+                  <div className="mt-0.5" style={{color: '#0d9488', fontSize: '11px'}}>Shortlisted candidates will take the SQL & Algorithm simulation before interview</div>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={newJobForm.corporateExamRequired}
+                  onChange={(e) => setNewJobForm({ ...newJobForm, corporateExamRequired: e.target.checked })}
+                  className="w-5 h-5 cursor-pointer shrink-0 accent-teal-600"
                 />
               </div>
 
               {/* Actions */}
-              <div className="pt-2 flex items-center justify-end space-x-3 border-t border-slate-100 dark:border-slate-800">
+              <div className="pt-3 flex items-center justify-end gap-3" style={{borderTop: '1px solid #e2e8f0'}}>
                 <button
                   type="button"
                   onClick={() => { setIsPostModalOpen(false); setNewJobForm({ ...BLANK_JOB_FORM }); }}
-                  className="px-4 py-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg font-medium"
+                  className="px-4 py-2 rounded-lg font-medium transition-colors"
+                  style={{color: '#475569', backgroundColor: 'transparent'}}
+                  onMouseEnter={e => e.currentTarget.style.backgroundColor='#f1f5f9'}
+                  onMouseLeave={e => e.currentTarget.style.backgroundColor='transparent'}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={!newJobForm.title.trim()}
-                  className="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-bold rounded-xl shadow-md transition-all flex items-center space-x-1.5"
+                  className="px-5 py-2.5 text-white font-bold rounded-xl shadow-md transition-all flex items-center gap-1.5"
+                  style={{
+                    backgroundColor: newJobForm.title.trim() ? '#0d9488' : '#cbd5e1',
+                    cursor: newJobForm.title.trim() ? 'pointer' : 'not-allowed'
+                  }}
                 >
                   <span>Publish Opening</span>
                   <CheckCircle2 className="w-4 h-4" />
